@@ -52,10 +52,16 @@ class FilterableComponent extends Component
             return;
         }
 
-        $values = isset($this->controller->request->param('named')['data']) ?
+        $values = !empty($this->controller->request->param('named')['data']) ?
             $this->controller->request->param('named')['data'] : (
-                isset($this->controller->request->data['named']['data']) ?
+                !empty($this->controller->request->data['named']['data']) ?
                 $this->controller->request->data['named']['data'] : []);
+
+        if (empty($values)) {
+            $values = (isset($this->controller->request->data['named']['filter']) ?
+                $this->controller->request->data['named']['filter'] : []);
+        }
+
 
 
         foreach ($this->controller->{$this->controller->modelClass}->fields as $k => $fieldSettings) {
@@ -81,7 +87,7 @@ class FilterableComponent extends Component
 
         $filters = $this->controller->{$this->controller->modelClass}->filters;
 
-        $values = isset($this->controller->request->param('named')['filter']) ?
+        $values = !empty($this->controller->request->param('named')['filter']) ?
             $this->controller->request->param('named')['filter'] : [];
 
         if (empty($values)) {
@@ -93,8 +99,6 @@ class FilterableComponent extends Component
             $this->controller->settings['index']['page'] = $values['page'];
         }
 
-
-        $this->controller->set('filter', $values);
 
         $conditions = [];
 

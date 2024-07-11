@@ -1934,6 +1934,8 @@ class FormHelper extends AppHelper {
 		));
 		$out .= $this->_csrfField();
 
+		$options['data']['_isPostLink'] = true;
+
 		$fields = array();
 		if (isset($options['data']) && is_array($options['data'])) {
 			foreach (Hash::flatten($options['data']) as $key => $value) {

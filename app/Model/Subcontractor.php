@@ -23,6 +23,7 @@ class Subcontractor extends ImplementableModel
         [
             'fieldKey' => 'name',
             'label' => 'Nombre',
+            'autocomplete' => 'off',
             'div' => InputDiv::COL_SM_12,
             'showIn' => TRUE,
             'filter' => [

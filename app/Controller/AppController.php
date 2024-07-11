@@ -4,6 +4,7 @@ App::uses('Controller', 'Controller');
 App::uses('Security', 'Utility');
 App::uses('CakeText', 'Utility');
 App::uses('AuthComponent', 'Controller/Component');
+App::uses('AuthComponent', 'RequestHandler/Component');
 
 class AppController extends Controller {
 
@@ -46,7 +47,6 @@ class AppController extends Controller {
     ];
 
     public function beforeFilter() {
-
         //$this->Auth->allow(['add', 'index', 'view', 'edit']);
         if ($this->request->ext == 'json') {
             $this->Auth->loginRedirect = false;
@@ -70,6 +70,7 @@ class AppController extends Controller {
 
 
         parent::beforeFilter();
+     
     }
 
     public function isAuthorized($account = null) {

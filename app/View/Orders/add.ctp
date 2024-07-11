@@ -24,51 +24,25 @@
         <div class="row">
             <?PHP
             echo $this->Form->hidden('Order.id', [
-                'default' =>  $_uuid
-            ]);
-            echo $this->Form->hidden('Order.survey_id', [
-                'default' =>  $survey['Survey']['id']
+                'default' => CakeText::uuid()
             ]);
             foreach ($modelFields as $key => $options):
                 echo $this->Form->input($key, $options);
             endforeach;
-            /*
-             *SURVEY QUESTIONS
-             */
-            foreach ($survey['Question'] as $index => $question):
-                echo $this->Form->hidden('QuestionAnswer.' . $index . '.order_id', [
-                    'default' => $_uuid
-                ]);
-                echo $this->Form->hidden('QuestionAnswer.' . $index . '.question_id', [
-                    'default' => $question['id']
-                ]);
-                switch ($question['type']) {
-                    case 'options':
-                        echo $this->Form->input(
-                            'QuestionAnswer.' . $index . '.value',
-                            array_merge_recursive(
-                                InputType::SELECT,
-                                [
-                                    'options' => Hash::combine(explode(',', $question['options']), '{n}', '{n}')
-                                ]
-                            )
-                        );
-                        break;
-                    case 'number':
-                        echo $this->Form->input('QuestionAnswer.' . $index . '.value', [
-                            'label' => $question['question'],
-                            'type' => 'number'
-                        ]);
-                        break;
-                    case 'text':
-                        echo $this->Form->input('QuestionAnswer.' . $index . '.value', [
-                            'label' => $question['question'],
-                            'type' => 'text'
-                        ]);
-                        break;
-                }
-            endforeach;
+
             ?>
+            <div id="survey-container">
+                <?PHP
+                $this->requestAction(
+                    [
+                        'controller' => 'Surveys',
+                        'action' => 'survey',
+                        'EMPTY.action'
+                    ],
+                    [ 'return' ]
+                );
+                ?>
+            </div>
             <div class="col-md-5 offset-md-5 d-flex align-items-center gap-1 mt-4">
                 <?php
                 echo $this->Html->link('Cancel', 'javascript:void(0); window.history.back();', array('class' => 'btn btn-warning waves-effect waves-light btn-block'));
@@ -80,3 +54,29 @@
 
     </div>
 </div>
+
+
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+
+        $('#OrderSurveyId').change(function () {
+            let selectedName = $(this).find('option:selected').text();
+            let urlAction = "<?= Router::url([
+                'controller' => 'Surveys',
+                'action' => 'survey',
+            ]) ?>/" + selectedName + ".action";
+
+            $.ajax({
+                url: urlAction,
+                type: 'POST',
+                data: {},
+                success: function (response) {
+                    //$('#OrderSurveyId').parent().parent().parent().after('<div class="row col-sm-12">' + response + "</div>");
+                    $("#survey-container").html(response);
+                }
+            });
+
+        });
+    })
+</script>

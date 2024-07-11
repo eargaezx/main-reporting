@@ -60,6 +60,7 @@ class ImplementableBehavior extends ModelBehavior
 
             $fields[$k] = $settings;
         }
+       
         $model->fields = $fields;
     }
 
@@ -80,6 +81,8 @@ class ImplementableBehavior extends ModelBehavior
             if (isset($settings['type']) && !isset($settings['filter']['type'])) {
                 $settings['filter']['type'] = $settings['type'];
             }
+
+    
 
             if (!isset($settings['filter']['operator'])) {
                 $settings['filter']['operator'] = 'EQUAL';
@@ -111,7 +114,7 @@ class ImplementableBehavior extends ModelBehavior
     {
         $fields = [];
 
-        foreach ($model->fields as $settings) {
+        foreach ($model->fields as $k => $settings) {
             if (!isset($settings['showIn']) || $settings['showIn'] === FALSE)
                 continue;
 
@@ -132,6 +135,8 @@ class ImplementableBehavior extends ModelBehavior
                 unset($fields[$fieldName]['showIn']);
                 unset($fields[$fieldName]['fieldKey']);
                 unset($fields[$fieldName]['modelClass']);
+            }else{
+                $model->fields[$k]['showIn'] = FALSE;
             }
         }
 
@@ -158,13 +163,13 @@ class ImplementableBehavior extends ModelBehavior
 
             //sanitize field settings
             unset($settings['filter']);
-            unset($settings['showIn']);
+            //unset($settings['showIn']);
             unset($settings['fieldKey']);
             unset($settings['modelClass']);
             unset($settings['operator']);
             unset($settings['fieldKey']);
             unset($settings['modelClass']);
-            unset($settings['showIn']);
+            //unset($settings['showIn']);
             unset($settings['bindValue']);
             unset($settings['readonly']);
             unset($settings['required']);

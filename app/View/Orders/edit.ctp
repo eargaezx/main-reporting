@@ -23,91 +23,59 @@
 
         <div class="row">
             <?PHP
+
+            echo $this->Form->hidden('Order.id', [
+                'default' => CakeText::uuid()
+            ]);
             foreach ($modelFields as $key => $options):
                 echo $this->Form->input($key, $options);
             endforeach;
-            /*
-             *SURVEY QUESTIONS
-             */
-            $answers = $this->request->data['QuestionAnswer'];
-            unset($this->request->data['QuestionAnswer']);
-            foreach ($survey['Question'] as $index => $question):
-                echo $this->Form->hidden('QuestionAnswer.' . $index . '.id', [
-                    'default' => empty(Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['id']) ?
-                        CakeText::uuid() : Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['id']
-                ]);
-                echo $this->Form->hidden('QuestionAnswer.' . $index . '.order_id', [
-                    'default' => $this->request->data['Order']['id']
-                ]);
-                echo $this->Form->hidden('QuestionAnswer.' . $index . '.question_id', [
-                    'default' => $question['id']
-                ]);
-                switch ($question['type']) {
-                    case 'options':
-                        echo $this->Form->input(
-                            'QuestionAnswer.' . $index . '.value',
-                            array_merge_recursive(
-                                InputType::SELECT,
-                                [
-                                    'label' => $question['question'],
-                                    'options' => Hash::combine(explode(',', $question['options']), '{n}', '{n}'),
-                                    'default' => empty(Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['value']) ? '' : Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['value']
-                                ]
-                            )
-                        );
-                        break;
-                    case 'number':
-                        echo $this->Form->input('QuestionAnswer.' . $index . '.value', [
-                            'label' => $question['question'],
-                            'type' => 'number',
-                            'default' => empty(Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['value']) ? '' : Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['value']
-                        ]);
-                        break;
-                    case 'text':
-                        echo $this->Form->input('QuestionAnswer.' . $index . '.value', [
-                            'label' => $question['question'],
-                            'type' => 'text',
-                            'default' => empty(Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['value']) ? '' : Hash::extract($answers, '{n}[question_id=' . $question['id'] . ']')[0]['value']
-                        ]);
-                        break;
-                }
-            endforeach;
+
             ?>
-            <div class="col-md-5 offset-md-5 d-flex align-items-center gap-1 mt-4">
+            <div id="survey-container" class="row col-sm-12">
+                <?PHP
+                $this->requestAction(
+                    [
+                        'controller' => 'Surveys',
+                        'action' => 'survey',
+                        !empty($this->request->data['Order']['survey_id']) ? $this->request->data['Order']['survey_id'] : 'EMPTY' . '.action'
+                    ],
+                    ['return']
+                );
+                ?>
+            </div>
+            <div class="col-sm-5 offset-md-5 d-flex align-items-center gap-1 mt-1" style="line-height:86px">
                 <?php
                 echo $this->Html->link('Cancel', 'javascript:void(0); window.history.back();', array('class' => 'btn btn-warning waves-effect waves-light btn-block'));
                 echo $this->Form->submit('Save', ['class' => 'btn btn-warning waves-effect waves-light btn-block']);
                 ?>
             </div>
+            <?= $this->Form->end() ?>
+
         </div>
-        <?= $this->Form->end() ?>
 
-    </div>
-</div>
 
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function () {
-        jQuery(document).ready(function () {
-            function onQuestionType(selectedValue) {
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                $('#OrderSurveyId').change(function () {
+                    let selectedName = $(this).find('option:selected').text();
+                    if (selectedName.trim() == 'None' || selectedName.trim().length == 0) {
+                        selectedName = 'EMPTY'
+                    }
+                    let urlAction = "<?= Router::url([
+                        'controller' => 'Surveys',
+                        'action' => 'survey',
+                    ]) ?>/" + selectedName + ".action";
 
-                window.location.href = "<?= Router::url([
-                    'controller' => 'Orders',
-                    'action' => 'edit',
-                    $this->request->data['Order']['id'],
-
-                ]) ?>/" + selectedValue 
-                + "/" + $('#OrderSubcontractorId').val() 
-                + "/" +  $('#OrderOperatorId').val()
-                + "/" +  $('#OrderName').val()
-                + "/" +  $('#OrderStatus').val();
-
-            }
-
-            $('#OrderSurveyId').change(function () {
-                onQuestionType($(this).val());
-            });
-
-            //onQuestionType($('#OrderSurveyId').val());
-        })
-    });
-</script>
+                    $.ajax({
+                        url: urlAction,
+                        type: 'POST',
+                        data: {},
+                        success: function (response) {
+                            //$('#OrderSurveyId').parent().parent().parent().after('<div class="row col-sm-12">' + response + "</div>");
+                            $("#survey-container").html(response);
+                        }
+                    });
+                });
+            })
+        </script>

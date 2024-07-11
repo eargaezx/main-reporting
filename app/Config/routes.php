@@ -39,7 +39,7 @@ Router::connect('/privacy/*', array('controller' => 'ApiServices', 'action' => '
  */
 CakePlugin::routes();
 
-Router::parseExtensions('json', 'ajax');
+Router::parseExtensions('json', 'ajax', 'action');
 /**
  * Load the CakePHP default routes. Only remove this if you do not want to use
  * the built-in default routes.

@@ -2,7 +2,8 @@
 
 App::uses('ImplementableController', 'Implementable.Controller');
 
-class SurveysController extends ImplementableController {
+class SurveysController extends ImplementableController
+{
 
     public $settings = [
         'add' => [
@@ -15,4 +16,12 @@ class SurveysController extends ImplementableController {
         ],
     ];
 
+    public function survey($name)
+    {
+        $this->request->data = $this->Survey->find('first', [
+            'conditions' => ['Survey.name' => $name]
+        ]);
+        
+        $this->set('data', $this->request->data);
+    }
 }

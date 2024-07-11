@@ -39,18 +39,6 @@ class Order extends ImplementableModel
             ],
             'filter' => TRUE
         ],
-        'survey_id' => [
-            'fieldKey' => 'survey_id',
-            'label' => 'Work Type',
-            'type' => InputType::SELECT,
-            'div' => InputDiv::COL_SM_12,
-            'showIn' => TRUE,
-            // 'bindValue' => 'Subcontractor.name',
-            'options' => [
-                '' => 'None'
-            ],
-            'filter' => TRUE
-        ],
         [
             'fieldKey' => 'name',
             'label' => 'Nombre',
@@ -99,6 +87,18 @@ class Order extends ImplementableModel
             'rows' => 3,
             'div' => UIFormHelper::UI_WEIGHT_MD_12,
             'showIn' => FALSE,
+        ],
+        'survey_id' => [
+            'fieldKey' => 'survey_id',
+            'label' => 'Work Type',
+            'type' => InputType::SELECT,
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => TRUE,
+            // 'bindValue' => 'Subcontractor.name',
+            'options' => [
+                '' => 'None'
+            ],
+            'filter' => TRUE
         ],
     ];
     public $validate = [

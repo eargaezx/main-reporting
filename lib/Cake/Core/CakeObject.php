@@ -100,6 +100,10 @@ class CakeObject {
 			$request->data = $data;
 		}
 
+		
+
+	
+
 		$dispatcher = new Dispatcher();
 		$result = $dispatcher->dispatch($request, new CakeResponse(), $extra);
 		Router::popRequest();

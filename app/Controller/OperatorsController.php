@@ -2,7 +2,8 @@
 
 App::uses('ImplementableController', 'Implementable.Controller');
 
-class OperatorsController extends ImplementableController {
+class OperatorsController extends ImplementableController
+{
 
     public $settings = [
         'add' => [
@@ -15,24 +16,29 @@ class OperatorsController extends ImplementableController {
         ],
     ];
 
-    public function beforeFilter() {
+    public function beforeFilter()
+    {
         parent::beforeFilter();
-    }
-
-    public function index($business_id = null) {
-        $this->controllerActions['add']['params'][] = $business_id;
-        //$this->Employee->conditions['Employee.business_id'] = $business_id;
-       //$this->Employee->conditions['Account.account_type_id'] = 5;
-        parent::index();
-    }
-
-    public function add() {
-        if ($this->request->is('post') || $this->request->is('put')) {
-            $this->request->data['Account']['account_type_id'] = 5;
-            $this->request->data['Employee']['business_id'] = $this->Auth->user('Employee.business_id');
+        //set redirect and condition to survey details page
+        if (!empty($this->request->data['named']['filter']['subcontractor_id'])) {
+            $this->Operator->fields['subcontractor_id']['showIn'] = FALSE;
+            $this->Operator->fields['subcontractor_id']['default'] = $this->request->data['named']['filter']['subcontractor_id'];
+            $this->settings['edit']['redirect'] = [
+                'controller' => 'Subcontractors',
+                'action' => 'view',
+                $this->request->data['named']['filter']['subcontractor_id']
+            ];
+            $this->controllerActions['add']['data'] = $this->request->data;
         }
 
-        parent::add();
+        if (!empty($this->request->data['Operator']['subcontractor_id'])) {
+            $this->settings['edit']['redirect'] = [
+                'controller' => 'Subcontractors',
+                'action' => 'view',
+                $this->request->data['Operator']['subcontractor_id']
+            ];
+        }
     }
+
 
 }

@@ -2,41 +2,49 @@
 
 App::uses('AppController', 'Controller');
 
-abstract class ImplementableController extends AppController {
+abstract class ImplementableController extends AppController
+{
 
     public $helpers = [
         'Implementable.Implementable'
     ];
-    public $controllerActions = [
-        [
-            'type' => 'submit',
-            'title' => 'Buscar',
-            'class' => 'btn btn-sm btn-dark waves-effect',
-            'icon' => [
-                'class' => 'fe-search font-size-18'
-            ]
-        ],
-        [
-            'action' => 'download',
-            'title' => 'Descargar',
-            'class' => 'btn btn-sm btn-dark waves-effect',
-            'icon' => [
-                'class' => 'fe-download font-size-18'
-            ]
-        ],
-        'add' =>
-        [
-            'action' => 'add',
-            'title' => 'Crear',
-            'class' => 'btn btn-sm btn-dark waves-effect',
-            'icon' => [
-                'class' => 'fe-plus font-size-18'
-            ]
-        ]
-    ];
+    public $controllerActions = [];
     public $settings = [];
 
-    public function beforeFilter() {
+    public function beforeFilter()
+    {
+
+        $this->controllerActions = array_replace_recursive([
+            [
+                'type' => 'search',
+                'title' => 'Buscar',
+                'class' => 'btn btn-sm btn-dark waves-effect',
+                'icon' => [
+                    'class' => 'fe-search font-size-18'
+                ],
+                'data' => []
+            ],
+            [
+                'action' => 'download',
+                'title' => 'Descargar',
+                'class' => 'btn btn-sm btn-dark waves-effect',
+                'icon' => [
+                    'class' => 'fe-download font-size-18'
+                ],
+                'data' => []
+            ],
+            'add' =>
+                [
+                    'action' => 'add',
+                    'title' => 'Crear',
+                    'class' => 'btn btn-sm btn-dark waves-effect',
+                    'icon' => [
+                        'class' => 'fe-plus font-size-18'
+                    ],
+                    'data' => []
+                ]
+        ], $this->controllerActions);
+
 
 
         $this->settings = array_replace_recursive([
@@ -69,24 +77,30 @@ abstract class ImplementableController extends AppController {
                     'action' => 'index'
                 ],
             ]
-                ], $this->settings);
+        ], $this->settings);
+
+
+        if ($this->request->ext == 'action') {
+            $this->layout = false;
+            $this->autoRender = true;
+        }
         parent::beforeFilter();
     }
 
-    public function index() {
+    public function index()
+    {
         $this->paginate = [
-            'page' => empty($this->settings[$this->params['action']]['page'])? 1 : $this->settings[$this->params['action']]['page'],
+            'page' => empty($this->settings[$this->params['action']]['page']) ? 1 : $this->settings[$this->params['action']]['page'],
             'limit' => $this->settings[$this->params['action']]['limit'],
             'order' => $this->settings[$this->params['action']]['order']
         ];
 
         $this->set('limit', $this->settings[$this->params['action']]['limit']);
         $this->set('data', $this->Paginator->paginate($this->modelClass));
-        
-        
     }
 
-    public function add() {
+    public function add()
+    {
         $saveMethod = $this->settings[$this->params['action']]['saveMethod'];
         $deep = $this->settings[$this->params['action']]['deep'];
 
@@ -95,13 +109,11 @@ abstract class ImplementableController extends AppController {
             if ($data) {
                 $this->Session->setFlash('La operación se realizó correctamente.', 'Flash/success');
                 $redirect = Router::url($this->settings[$this->params['action']]['redirect'], true);
-                //echo pr($redirect); die(); 
                 $this->set('data', $data);
                 if (!empty($redirect)) {
                     $this->redirect($redirect);
                 }
             } else {
-                //echo pr($this->{$this->modelClass}->invalidFields()); die();
                 $errors = 'La operación se realizó correctamente.';
                 if ($this->request->ext == 'json') {
                     $errors = $this->{$this->modelClass}->validationErrors;
@@ -118,7 +130,8 @@ abstract class ImplementableController extends AppController {
         }
     }
 
-    public function edit($id = null) {
+    public function edit($id = null)
+    {
         $saveMethod = $this->settings[$this->params['action']]['saveMethod'];
         $deep = $this->settings[$this->params['action']]['deep'];
         $contain = $this->settings[$this->params['action']]['contain'];
@@ -133,7 +146,7 @@ abstract class ImplementableController extends AppController {
             return $this->redirect($this->request->referer());
         }
 
-        if ($this->request->is('post') || $this->request->is('put')) {
+        if ( ($this->request->is('post') || $this->request->is('put')) && (!isset($this->request->data['_isPostLink']) || !$this->request->data['_isPostLink']) ) {
             if ($this->{$this->modelClass}->{$saveMethod}($this->request->data, ['deep' => $deep])) {
                 $this->set('data', $this->{$this->modelClass}->read());
                 $this->Session->setFlash('La operación se realizó correctamente.', 'Flash/success');
@@ -141,25 +154,25 @@ abstract class ImplementableController extends AppController {
                 if (!empty($redirect)) {
                     $this->redirect($redirect);
                 }
-            } else { 
+            } else {
                 //echo pr($this->{$this->modelClass}->invalidFields()); die();
                 $errors = 'La operación se realizó correctamente.';
                 if ($this->request->ext == 'json') {
                     $errors = $this->{$this->modelClass}->validationErrors;
                     $errors = $this->{$this->modelClass}->invalidFields();
-             
-                    
-                    $errors = Hash::extract($errors, '{s}.{n}') 
-                            + Hash::extract($errors, '{s}.{s}.{n}') 
-                            + Hash::extract($errors, '{s}.{s}.{s}.{n}')
-                            + Hash::extract($errors, '{n}.{s}.{n}.{s}')
-                            + Hash::extract($errors, '{s}.{n}.{s}.{s}');
-                            
-                    
-                           
-                    
-                      $errors = '-' . implode('<br> -', array_unique($errors));
-                } 
+
+
+                    $errors = Hash::extract($errors, '{s}.{n}')
+                        + Hash::extract($errors, '{s}.{s}.{n}')
+                        + Hash::extract($errors, '{s}.{s}.{s}.{n}')
+                        + Hash::extract($errors, '{n}.{s}.{n}.{s}')
+                        + Hash::extract($errors, '{s}.{n}.{s}.{s}');
+
+
+
+
+                    $errors = '-' . implode('<br> -', array_unique($errors));
+                }
 
 
                 $this->Session->setFlash($errors, 'Flash/not_success');
@@ -171,7 +184,8 @@ abstract class ImplementableController extends AppController {
         }
     }
 
-    public function view($id = null) {
+    public function view($id = null)
+    {
         if (empty($id)) {
             return $this->redirect($this->request->referer());
         }
@@ -186,7 +200,8 @@ abstract class ImplementableController extends AppController {
         $this->set('data', $this->request->data);
     }
 
-    public function delete($id = null) {
+    public function delete($id = null)
+    {
         $deleteMethod = $this->settings[$this->params['action']]['deleteMethod'];
 
         if (empty($id)) {
@@ -215,13 +230,13 @@ abstract class ImplementableController extends AppController {
         }
     }
 
-    public function beforeRender() {
-       
+    public function beforeRender()
+    {
+
 
         if (property_exists($this, 'uses') && ($this->uses == FALSE || empty($this->uses))) {
             return parent::beforeRender();
         }
-
 
 
         $this->set('modelFields', $this->{$this->modelClass}->getFields($this->params['action']));
@@ -241,20 +256,22 @@ abstract class ImplementableController extends AppController {
             $this->request->ext = 'ajax';
         }
 
+
+
         $this->set('_ext', $this->request->ext);
         if (!empty($this->request->ext)) {
             if ($this->request->is('json')) {
                 $this->request->ext = 'json';
                 $this->view = '../Layouts/json/default';
+                $this->layout = $this->request->ext;
             }
-
-            $this->layout = $this->request->ext;
         }
 
         return parent::beforeRender();
     }
 
-    public function redirect($url, $status = null, $exit = true) {
+    public function redirect($url, $status = null, $exit = true)
+    {
         if ($this->request->is('json')) {
             return;
         } else {

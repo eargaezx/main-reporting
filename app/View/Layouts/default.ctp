@@ -44,6 +44,7 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 	echo $this->Html->css('../assets/libs/flatpickr/flatpickr.min');
 	echo $this->Html->css('../assets/libs/clockpicker/bootstrap-clockpicker.min');
 	echo $this->Html->css('../assets/css/app');
+	echo $this->Html->css('app');
 	?>
 </head>
 
@@ -85,6 +86,7 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 	echo $this->Html->script('../assets/js/vendor.min');
 	echo $this->Html->script('../assets/libs/flatpickr/flatpickr.min');
 	echo $this->Html->script('../assets/libs/apexcharts/apexcharts.min');
+	echo $this->Html->script('../assets/libs/twitter-bootstrap-wizard/jquery.bootstrap.wizard.min');
 	echo $this->Html->script('../assets/libs/selectize/js/standalone/selectize.min');
 	echo $this->Html->script('../assets/js/pages/dashboard-1.init');
 	echo $this->Html->script('../assets/libs/jsgrid/jsgrid.min');
@@ -98,6 +100,7 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 	echo $this->Html->script('../assets/libs/spectrum-colorpicker2/spectrum.min');
 	echo $this->Html->script('../assets/libs/clockpicker/bootstrap-clockpicker.min');
 	echo $this->Html->script('../assets/js/pages/form-pickers.init');
+	echo $this->Html->script('../assets/js/pages/form-wizard.init');
 	echo $this->Html->script('../assets/js/app');
 	?>
 </body>

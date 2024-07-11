@@ -37,6 +37,7 @@ final class InputType {
     const IMAGE = [
         'type' => 'file',
         'class' => 'form-control dropify',
+        'data-plugins' => 'dropify',
         'data-max-file-size' => '3M',
         'data-max-file-size-preview' => '3M',
         'data-allowed-file-extensions' => 'png jpg jpeg',
