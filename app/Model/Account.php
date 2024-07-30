@@ -173,25 +173,7 @@ class Account extends ImplementableModel
 
     /* LifeCycle Model Callbacks */
 
-    public function beforeValidate($options = array())
-    {
-        if (!isset($this->data[$this->name]['id']) && !empty($this->data[$this->name]['package_id']) && !empty($this->data[$this->name]['phone_country']) && !empty($this->data[$this->name]['phone_number']) && array_key_exists($this->data[$this->name]['package_id'], $this->PACKAGE_ACCOUNT_TYPES)) {
-            $this->data[$this->name]['username'] = $this->data[$this->name]['package_id'] . '_' . $this->data[$this->name]['phone_country'] . $this->data[$this->name]['phone_number'];
 
-            $this->data[$this->name]['account_type_id'] = $this->PACKAGE_ACCOUNT_TYPES[$this->data[$this->name]['package_id']];
-        }
-
-
-        if (!isset($this->data[$this->name]['id']) && !isset($this->data[$this->name]['password'])) {
-            $token = CakeText::uuid();
-            $this->data[$this->name]['status'] = 0;
-            $this->data[$this->name]['token'] = $token;
-            $this->data[$this->name]['password'] = $token;
-            $this->data[$this->name]['repeated_password'] = $token;
-        }
-
-        parent::beforeValidate($options);
-    }
 
     public function beforeSave($options = array())
     {
@@ -204,7 +186,6 @@ class Account extends ImplementableModel
 
     public function afterSave($created, $options = array())
     {
-        $this->oneTouchLink($created, $this->id);
         parent::afterSave($created, $options);
     }
 

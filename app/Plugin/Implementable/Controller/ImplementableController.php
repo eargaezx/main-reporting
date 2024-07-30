@@ -108,10 +108,9 @@ abstract class ImplementableController extends AppController
             $data = $this->{$this->modelClass}->{$saveMethod}($this->request->data, ['deep' => $deep]);
             if ($data) {
                 $this->Session->setFlash('La operación se realizó correctamente.', 'Flash/success');
-                $redirect = Router::url($this->settings[$this->params['action']]['redirect'], true);
                 $this->set('data', $data);
-                if (!empty($redirect)) {
-                    $this->redirect($redirect);
+                if (isset($this->settings[$this->params['action']]['redirect'])) {
+                    $this->redirect(Router::url($this->settings[$this->params['action']]['redirect'], true));
                 }
             } else {
                 $errors = 'La operación se realizó correctamente.';
@@ -123,11 +122,14 @@ abstract class ImplementableController extends AppController
                     $errors = '-' . implode('<br> -', array_unique($errors));
                 }
 
-
-
+                $this->Session->write('ValidationErrors', $this->{$this->modelClass}->validationErrors);
+                $this->Session->write('FormData', $this->request->data);
                 $this->Session->setFlash($errors, 'Flash/not_success');
             }
+
         }
+
+
     }
 
     public function edit($id = null)
@@ -146,13 +148,12 @@ abstract class ImplementableController extends AppController
             return $this->redirect($this->request->referer());
         }
 
-        if ( ($this->request->is('post') || $this->request->is('put')) && (!isset($this->request->data['_isPostLink']) || !$this->request->data['_isPostLink']) ) {
+        if (($this->request->is('post') || $this->request->is('put')) && (!isset($this->request->data['_isPostLink']) || !$this->request->data['_isPostLink'])) {
             if ($this->{$this->modelClass}->{$saveMethod}($this->request->data, ['deep' => $deep])) {
                 $this->set('data', $this->{$this->modelClass}->read());
                 $this->Session->setFlash('La operación se realizó correctamente.', 'Flash/success');
-                $redirect = Router::url($this->settings[$this->params['action']]['redirect'], true);
-                if (!empty($redirect)) {
-                    $this->redirect($redirect);
+                if (isset($this->settings[$this->params['action']]['redirect'])) {
+                    $this->redirect(Router::url($this->settings[$this->params['action']]['redirect'], true));
                 }
             } else {
                 //echo pr($this->{$this->modelClass}->invalidFields()); die();
@@ -230,10 +231,15 @@ abstract class ImplementableController extends AppController
         }
     }
 
+    public function fields($action = null)
+    {
+        if (empty($action))
+            $action = $this->params['action'];
+        return $this->{$this->modelClass}->getFields($action);
+    }
+
     public function beforeRender()
     {
-
-
         if (property_exists($this, 'uses') && ($this->uses == FALSE || empty($this->uses))) {
             return parent::beforeRender();
         }

@@ -101,6 +101,7 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 	echo $this->Html->script('../assets/libs/clockpicker/bootstrap-clockpicker.min');
 	echo $this->Html->script('../assets/js/pages/form-pickers.init');
 	echo $this->Html->script('../assets/js/pages/form-wizard.init');
+	echo $this->Html->script('../assets/js/implementable');
 	echo $this->Html->script('../assets/js/app');
 	?>
 </body>

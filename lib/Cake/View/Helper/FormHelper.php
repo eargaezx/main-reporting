@@ -934,7 +934,7 @@ class FormHelper extends AppHelper {
  * @link https://book.cakephp.org/2.0/en/core-libraries/helpers/form.html#FormHelper::inputs
  */
 	public function inputs($fields = null, $blacklist = null, $options = array()) {
-		$fieldset = $legend = true;
+		$fieldset = $legend = false;
 		$modelFields = array();
 		$model = $this->model();
 		if ($model) {

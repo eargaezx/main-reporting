@@ -1,9 +1,24 @@
 <div class="card">
     <div class="card-body">
+        <?PHP
+        $this->Form->inputDefaults([
+            'fieldset' => false,
+            'format' => ['label', 'before', 'between', 'input', 'after', 'error'],
+            'div' => [
+                'class' => 'mb-3 col-sm-6'
+            ],
+            'before' => '<div class="form-group"><div class="input-group">',
+            'after' => '</div></div>',
+            'class' => 'form-control',
 
+        ]);
+        ?>
         <h4 class="header-title mb-3">Subcontractor</h4>
 
-        <div class="container" autocomplete="off">
+        <form novalidate id="setup-form"
+            action="<?= Router::url(['controller' => 'Subcontractors', 'action' => 'setup'], true) ?>" method="POST"
+            class="container" autocomplete="off" enctype="multipart/form-data">
+            <input id="setup-form-submit" type="submit" hidden>
             <div id="custom-wizard">
                 <ul class="nav nav-pills bg-light nav-justified form-wizard-header mb-4" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -32,38 +47,60 @@
                 <div class="tab-content b-0 mb-0 pt-0">
                     <div class="tab-pane active show" id="basictab1" role="tabpanel">
                         <?PHP
-                        echo $this->requestAction(
-                            [
-                                'controller' => 'Subcontractors',
-                                'action' => 'add.action'
-                            ],
-                            ['return']
+                        echo $this->Form->inputs(
+                            $this->requestAction(
+                                [
+                                    'controller' => 'Subcontractors',
+                                    'action' => 'fields',
+                                    'add'
+                                ],
+                                [
+                                    'return' => true,
+                                    'autoRender' => false,
+                                ]
+                            )
                         );
                         ?>
                     </div>
 
                     <div class="tab-pane" id="basictab2" role="tabpanel">
-                        <?PHP
-                        echo $this->requestAction(
-                            [
-                                'controller' => 'Operators',
-                                'action' => 'add.action'
-                            ],
-                            ['return']
-                        );
-                        ?>
+                        <div class="row">
+                            <?PHP
+                            echo $this->Form->inputs(
+                                $this->requestAction(
+                                    [
+                                        'controller' => 'Operators',
+                                        'action' => 'fields',
+                                        'add'
+                                    ],
+                                    [
+                                        'return' => true,
+                                        'autoRender' => false,
+                                    ]
+                                )
+                            );
+                            ?>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="basictab3" role="tabpanel">
-                        <?PHP
-                        echo $this->requestAction(
-                            [
-                                'controller' => 'Licenses',
-                                'action' => 'add.action'
-                            ],
-                            ['return']
-                        );
-                        ?>
+                        <div class="row">
+                            <?PHP
+                            echo $this->Form->inputs(
+                                $this->requestAction(
+                                    [
+                                        'controller' => 'Licenses',
+                                        'action' => 'fields',
+                                        'add'
+                                    ],
+                                    [
+                                        'return' => true,
+                                        'autoRender' => false,
+                                    ]
+                                )
+                            );
+                            ?>
+                        </div>
                     </div>
 
                     <ul class="pager list-inline wizard mb-0">
@@ -77,26 +114,18 @@
 
                 </div> <!-- tab-content -->
             </div> <!-- end #basicwizard-->
-            </di>
 
-        </div> <!-- end card-body -->
+        </form> <!-- end card-body -->
     </div>
+</div>
 
 
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        $(document).ready(function () {
 
-            $(document).ready(function () {
-                $('#custom-wizard').bootstrapWizard({
-                    'tabClass': 'nav nav-pills',
-                    'nextSelector': '.next',
-                    'previousSelector': '.previous'
-                });
+            $('#custom-wizard').composableWizard();
 
-                $('button, a, input').filter(function () {
-                    return $(this).text() === 'Cancel' || $(this).text() === 'Save' || $(this).val() === 'Save';
-                }).remove();
-
-            });
         });
-    </script>
+    });
+</script>

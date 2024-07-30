@@ -6,7 +6,9 @@ class Operator extends ImplementableModel
 {
 
     public $singularDisplayName = 'Technician';
-    public $pluralDisplayName = 'Technicians';
+    public $virtualFields = [
+        'name' => 'CONCAT(Operator.first_name," ",Operator.last_name)',
+    ];
     public $fields = [
         [
             'fieldKey' => 'id',
@@ -46,27 +48,28 @@ class Operator extends ImplementableModel
         [
             'fieldKey' => 'first_name',
             'label' => 'Nombre(s)',
-            'showIn' => ['add', 'edit', 'view']
+            'showIn' => ['add', 'edit', 'view', 'setup']
         ],
         [
             'fieldKey' => 'last_name',
             'label' => 'Apellido(s)',
-            'showIn' => ['add', 'edit', 'view']
+            'showIn' => ['add', 'edit', 'view', 'setup']
         ],
         [
             'fieldKey' => 'username',
             'modelClass' => Account::class,
             'weight' => UIFormHelper::UI_WEIGHT_MD_6,
+            'showIn' => ['add', 'view', 'edit', 'setup']
         ],
         'password' => [
             'fieldKey' => 'password',
             'modelClass' => Account::class,
-            'showIn' => ['add', 'view', 'edit']
+            'showIn' => ['add', 'view', 'edit', 'setup']
         ],
         'repeated_password' => [
             'fieldKey' => 'repeated_password',
             'modelClass' => Account::class,
-            'showIn' => ['add', 'view', 'edit']
+            'showIn' => ['add', 'view', 'edit', 'setup']
         ],
         [
             'fieldKey' => 'status',
@@ -98,9 +101,19 @@ class Operator extends ImplementableModel
         'subcontractor_id' => [
             'rule' => 'notBlank',
             'required' => true,
-            'message' => 'El campo contratista es requerido',
+            'message' => 'Subcontractor field is required',
             'on' => 'update'
-        ]
+        ],
+        'first_name' => [
+            'rule' => 'notBlank',
+            'required' => true,
+            'message' => 'First name field is required'
+        ],
+        'last_name' => [
+            'rule' => 'notBlank',
+            'required' => true,
+            'message' => 'Last name field is required'
+        ],
     ];
     public $belongsTo = [
         'Subcontractor' => [
@@ -120,57 +133,9 @@ class Operator extends ImplementableModel
         parent::afterSave($created, $options);
     }
 
-    public function beforeDelete($cascade = true)
-    {
-        $this->Account->delete($this->read('account_id')['Employee']['account_id'], false);
-        parent::beforeDelete($cascade);
-    }
+
 
     /* Logic custom functions */
 
-    public function oneTouchLink($created, $id)
-    {
-        if (!$created || !isset($id))
-            return;
 
-        $data = $this->read(null, $id);
-
-
-        $urlActivate = Router::url(
-            [
-                'controller' => 'Accounts',
-                'action' => 'activate',
-                $data['Account']['token'],
-            ],
-            true
-        );
-
-        $this->sendEmail([
-            'to' => [
-                $data['Account']['username']
-            ],
-            'subject' => 'Activar cuenta',
-            'content' => '',
-            'emailFormat' => 'html',
-            'template' => 'activate',
-            'viewVars' => [
-                'data' => [
-                    'name' => isset($data['Employee']['first_name']) ? $data['Employee']['first_name'] : '',
-                    'url' => $urlActivate,
-                    'device' => $data['Account']['device']
-                ]
-            ]
-        ]);
-    }
-
-    /* public function beforeImplement() {
-      if (AuthComponent::user() && AuthComponent::user('account_type_id') != 1) {
-      unset($this->fields['school_id']);
-
-      $this->conditions[$this->name . '.id !='] = AuthComponent::user('Partner.id');
-
-      $this->data[$this->name]['school_id'] = AuthComponent::user('Partner.school_id');
-      $this->conditions[$this->name . '.school_id'] = AuthComponent::user('Partner.school_id');
-      }
-      } */
 }

@@ -1,5 +1,6 @@
-<?=
-    $this->Form->create($modelName, [
+<?PHP
+if (empty($this->request->data['data']['unwrapped'])) {
+    echo $this->Form->create($modelName, [
         'enctype' => 'multipart/form-data',
         'class' => isset($formClass) ? $formClass : '',
         'inputDefaults' => [
@@ -12,13 +13,23 @@
             'after' => '</div></div>',
             'class' => 'form-control',
         ]
-    ])
-    ?>
+    ]);
+}
+?>
 <div class="row">
     <?PHP
-    foreach ($modelFields as $key => $options):
-        echo $this->Form->input($key, $options);
-    endforeach;
+    foreach ($modelFields as $key => $options) {
+        echo $this->Form->input($key, array_merge([
+            'fieldset' => false,
+            'format' => ['label', 'before', 'between', 'input', 'after', 'error'],
+            'div' => [
+                'class' => 'mb-3 col-sm-6'
+            ],
+            'before' => '<div class="form-group"><div class="input-group">',
+            'after' => '</div></div>',
+            'class' => 'form-control',
+        ], $options));
+    }
     ?>
     <div class="col-md-5 offset-md-5 d-flex align-items-center gap-1 mt-4">
         <?php
@@ -27,4 +38,9 @@
         ?>
     </div>
 </div>
-<?= $this->Form->end() ?>
+
+<?PHP
+if (empty($this->request->data['data']['unwrapped'])) {
+    $this->Form->end();
+}
+?>

@@ -97,13 +97,13 @@ class Subcontractor extends ImplementableModel
             //'conditions' => 'Employee.account_type_id = 5',
         ],
     ];
-    public $belongsTo = [
+    /*public $belongsTo = [
         'Operator' => [
             'className' => 'Operator',
             'dependent' => true,
             //'conditions' => 'Employee.account_type_id = 3',
         ],
-    ];
+    ];*/
 
 
     public function beforeImplement()
