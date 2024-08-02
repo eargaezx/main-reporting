@@ -957,6 +957,7 @@ class FormHelper extends AppHelper {
 			}
 			$fields = array();
 		}
+		
 
 		if (isset($options['legend'])) {
 			$legend = $options['legend'];
@@ -967,6 +968,8 @@ class FormHelper extends AppHelper {
 			$fieldset = $options['fieldset'];
 			unset($options['fieldset']);
 		}
+
+		
 
 		if (empty($fields)) {
 			$fields = $modelFields;
@@ -987,10 +990,20 @@ class FormHelper extends AppHelper {
 
 		$out = null;
 		foreach ($fields as $name => $options) {
+			// Verifica si el campo es de tipo archivo y si hay un valor existente
+			$_val = Set::extract($name, $this->request->data);
+			if (isset($options['type']) && $options['type'] === 'file' && !empty($_val) && !is_array($_val)) {
+				$options['data-default-file'] = $_val;
+				$options['required'] = false;
+			}
+
 			if (is_numeric($name) && !is_array($options)) {
 				$name = $options;
 				$options = array();
 			}
+
+			
+	
 			$entity = explode('.', $name);
 			$blacklisted = (
 				is_array($blacklist) &&

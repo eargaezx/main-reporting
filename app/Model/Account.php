@@ -15,8 +15,8 @@ class Account extends ImplementableModel
     ];
 
 
-    public $singularDisplayName = 'Cuenta de Usuario';
-    public $pluralDisplayName = 'Cuentas de Usuario';
+    public $singularDisplayName = 'System Account';
+    public $pluralDisplayName = 'System Accounts';
     public $displayField = 'name';
     public $virtualFields = [
         //'name' => 'CONCAT(Account.first_name," ",Account.last_name)',
@@ -75,7 +75,7 @@ class Account extends ImplementableModel
         [
             'fieldKey' => 'created',
             'label' => 'Creado',
-            'type' => InputType::DATE,
+            'type' => InputType::DATERANGE,
             'showIn' => ['index', 'view'],
             'sourceFormat' => 'Y-m-d',
             'displayFormat' => 'd/m/Y',
@@ -109,7 +109,8 @@ class Account extends ImplementableModel
             'unique' => [
                 'rule' => 'isUnique',
                 'required' => true,
-                'message' => 'Ya existe un usuario registrado con este correo'
+                'message' => 'Ya existe un usuario registrado con este correo',
+                'on' => 'create'
             ]
         ],
         'password' => [
@@ -121,7 +122,7 @@ class Account extends ImplementableModel
             ],
             'matchPasswords' => [
                 'rule' => 'matchPasswords',
-                'message' => 'No coinciden las contraseñas'
+                'message' => 'No coinciden las contraseñas',
             ],
         ],
         'repeated_password' => [
@@ -138,8 +139,9 @@ class Account extends ImplementableModel
         ],
         'status' => [
             'rule' => 'notBlank',
-            'required' => true,
-            'message' => 'El campo estatus campo es requerido'
+            //'required' => true,
+            'message' => 'El campo estatus campo es requerido',
+             'on' => 'create'
         ]
     ];
     public $hasOne = [
@@ -181,11 +183,16 @@ class Account extends ImplementableModel
             $this->data[$this->name]['password'] = AuthComponent::password($this->data[$this->name]['password']);
         }
 
+        if ($this->isNewRecord()) {
+            $this->data[$this->name]['token'] = CakeText::uuid();
+        }
+
         return parent::beforeSave($options);
     }
 
     public function afterSave($created, $options = array())
     {
+        $this->oneTouchLink($created, $this->id);
         parent::afterSave($created, $options);
     }
 
@@ -197,16 +204,6 @@ class Account extends ImplementableModel
 
         $data = $this->read(null, $id);
 
-
-        if ($created && $data['Account']['package_id'] == 'com.axcode.mercaditonaranja') {
-            $this->Customer->save([
-                'Customer' => [
-                    'account_id' => $data['Account']['id']
-                ]
-            ]);
-        }
-
-
         $urlActivate = Router::url([
             'controller' => 'Accounts',
             'action' => 'activate',
@@ -214,10 +211,20 @@ class Account extends ImplementableModel
         ], true);
 
 
-
-        $this->sendSMS([
-            'message' => 'Hola, ' . $data['Account']['first_name'] . ' activa tu cuenta para ingresar a tu dispositivo ' . $data['Account']['device'] . ' en la siguiente liga ' . $urlActivate,
-            'phone_number' => $data['Account']['phone_country'] . $data['Account']['phone_number']
+        $this->sendEmail([
+            'to' => [
+                $data['Account']['username']
+            ],
+            'subject' => 'Activar cuenta',
+            'content' => '',
+            'emailFormat' => 'html',
+            'template' => 'activate',
+            'viewVars' => [
+                'data' => [
+                    'name' => isset($data['Operator']['first_name']) ? $data['Operator']['first_name'] : '',
+                    'url' => $urlActivate
+                ]
+            ]
         ]);
     }
 

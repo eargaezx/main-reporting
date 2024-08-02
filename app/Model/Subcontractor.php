@@ -7,11 +7,23 @@ class Subcontractor extends ImplementableModel
 
     public $singularDisplayName = "Subcontractor";
     public $pluralDisplayName = "Subcontractors";
+
+    public $actions = [
+        'edit' => [
+            'action' => 'setup',
+            'title' => 'Edit',
+            'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
+            'icon' => [
+                'class' => 'fe-edit-2'
+            ]
+        ],
+    ];
     public $fields = [
         [
             'fieldKey' => 'id',
+            'label' => FALSE,
             'type' => 'hidden',
-            'showIn' => ['edit']
+            'showIn' => ['edit', 'setup']
         ],
         [
             'fieldKey' => 'logo',
@@ -50,13 +62,13 @@ class Subcontractor extends ImplementableModel
         ],
         [
             'fieldKey' => 'status',
-            'label' => 'Estatus',
+            'label' => 'Status',
             'type' => InputType::SELECT,
             'div' => InputDiv::COL_SM_12,
             'options' => [
-                '' => 'SELECCIONAR',
-                '1' => 'ACTIVO',
-                '0' => 'INACTIVO',
+                '' => 'SELECT A OPTION',
+                true => 'ACTIVE',
+                false => 'INACTIVE',
             ],
             'showIn' => TRUE,
             'filter' => [
@@ -81,12 +93,12 @@ class Subcontractor extends ImplementableModel
             'rule' => 'notBlank',
             'message' => 'El logo es requerido',
             'on' => 'create',
-            'required' => true,
         ],
         'status' => [
             'noBlank' => [
                 'rule' => 'notBlank',
-                'message' => 'El campo estatus es requerido'
+                'message' => 'El campo estatus es requerido',
+                 'on' => 'create'
             ]
         ],
     ];
@@ -95,8 +107,21 @@ class Subcontractor extends ImplementableModel
             'className' => 'Operator',
             'dependent' => true,
             //'conditions' => 'Employee.account_type_id = 5',
+        ]
+    ];
+    public $hasOne = [
+        'Admin' => [
+            'className' => 'Operator',
+            'dependent' => true,
+            'conditions' => 'Admin.owner = 1',
+        ],
+        'SubcontractorLicense' => [
+            'className' => 'SubcontractorLicense',
+            'dependent' => true,
+            'conditions' => 'SubcontractorLicense.status = 1',
         ],
     ];
+
     /*public $belongsTo = [
         'Operator' => [
             'className' => 'Operator',

@@ -42,4 +42,8 @@ abstract class ImplementableModel extends AppModel
     ];
     public $belongsTo = [];
 
+
+    protected function isNewRecord() {
+        return empty($this->data[$this->alias]['id']);
+    }
 }

@@ -16,8 +16,8 @@
         <h4 class="header-title mb-3">Subcontractor</h4>
 
         <form novalidate id="setup-form"
-            action="<?= Router::url(['controller' => 'Subcontractors', 'action' => 'setup'], true) ?>" method="POST"
-            class="container" autocomplete="off" enctype="multipart/form-data">
+            action="<?= Router::url(['controller' => 'Subcontractors', 'action' => 'setup', $id], true) ?>"
+            method="POST" class="container" autocomplete="off" enctype="multipart/form-data">
             <input id="setup-form-submit" type="submit" hidden>
             <div id="custom-wizard">
                 <ul class="nav nav-pills bg-light nav-justified form-wizard-header mb-4" role="tablist">
@@ -46,39 +46,45 @@
 
                 <div class="tab-content b-0 mb-0 pt-0">
                     <div class="tab-pane active show" id="basictab1" role="tabpanel">
-                        <?PHP
-                        echo $this->Form->inputs(
-                            $this->requestAction(
+                        <div class="row">
+                            <?PHP
+                            $subcontractorFields = $this->requestAction(
                                 [
                                     'controller' => 'Subcontractors',
                                     'action' => 'fields',
-                                    'add'
+                                    $actionType
                                 ],
                                 [
                                     'return' => true,
                                     'autoRender' => false,
                                 ]
-                            )
-                        );
-                        ?>
+                            );
+                            unset($subcontractorFields['Subcontractor.status']);
+                            echo $this->Form->inputs($subcontractorFields);
+                            ?>
+                        </div>
                     </div>
 
                     <div class="tab-pane" id="basictab2" role="tabpanel">
                         <div class="row">
                             <?PHP
-                            echo $this->Form->inputs(
-                                $this->requestAction(
-                                    [
-                                        'controller' => 'Operators',
-                                        'action' => 'fields',
-                                        'add'
-                                    ],
-                                    [
-                                        'return' => true,
-                                        'autoRender' => false,
-                                    ]
-                                )
+                            $operatorFields = $this->requestAction(
+                                [
+                                    'controller' => 'Operators',
+                                    'action' => 'fields',
+                                    $actionType,
+                                ],
+                                [
+                                    'return' => true,
+                                    'autoRender' => false
+                                ]
                             );
+                            unset($operatorFields['Account.status']);
+                            unset($operatorFields['Operator.subcontractor_id']);
+                            unset($operatorFields['Account.account_type_id']);
+                            $operatorFields['Account.password']['required'] = $actionType == 'add';
+                            $operatorFields['Account.repeated_password']['required'] = $actionType == 'add';
+                            echo $this->Form->inputs($operatorFields);
                             ?>
                         </div>
                     </div>
@@ -89,9 +95,9 @@
                             echo $this->Form->inputs(
                                 $this->requestAction(
                                     [
-                                        'controller' => 'Licenses',
+                                        'controller' => 'SubcontractorLicenses',
                                         'action' => 'fields',
-                                        'add'
+                                        $actionType
                                     ],
                                     [
                                         'return' => true,

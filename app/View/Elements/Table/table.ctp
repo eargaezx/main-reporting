@@ -144,6 +144,7 @@ if ($this->request->ext != 'ajax'):
                                         $rowData[$modelName]['id']
                                     ],
                                     [
+                                        'method' => 'GET',
                                         'data' => !empty($modelAction['data']) ? $modelAction['data'] : [],
                                         'escape' => false, // Permitir HTML dentro del enlace
                                         'confirm' => false,

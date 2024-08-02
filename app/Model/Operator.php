@@ -7,7 +7,7 @@ class Operator extends ImplementableModel
 
     public $singularDisplayName = 'Technician';
     public $virtualFields = [
-        'name' => 'CONCAT(Operator.first_name," ",Operator.last_name)',
+        'name' => 'CONCAT(first_name," ",last_name)',
     ];
     public $fields = [
         [
@@ -28,8 +28,9 @@ class Operator extends ImplementableModel
             'weight' => InputDiv::COL_SM_12,
             'showIn' => TRUE,
             // 'bindValue' => 'Subcontractor.name',
-            'filter' => [
-                'type' => 'EQUAL'
+            'filter' => TRUE,
+           'options' => [
+                '' => 'SELECT A OPTION',
             ]
         ],
         [
@@ -58,7 +59,7 @@ class Operator extends ImplementableModel
         [
             'fieldKey' => 'username',
             'modelClass' => Account::class,
-            'weight' => UIFormHelper::UI_WEIGHT_MD_6,
+            'div' => InputDiv::COL_SM_12,
             'showIn' => ['add', 'view', 'edit', 'setup']
         ],
         'password' => [
@@ -73,12 +74,14 @@ class Operator extends ImplementableModel
         ],
         [
             'fieldKey' => 'status',
-            'modelClass' => Account::class
+            'modelClass' => Account::class,
+            'div' => InputDiv::COL_SM_12,
+           
         ],
         [
             'fieldKey' => 'created',
             'modelClass' => Account::class,
-            'showIn' => ['index', 'view']
+            'showIn' => ['index', 'view'],
         ],
         [
             'fieldKey' => 'modified',
@@ -93,17 +96,17 @@ class Operator extends ImplementableModel
             'label' => 'Comentarios',
             'type' => 'text',
             'rows' => 3,
-            'weight' => UIFormHelper::UI_WEIGHT_MD_12,
+            'div' => InputDiv::COL_SM_12,
             'showIn' => FALSE,
         ],
     ];
     public $validate = [
-        'subcontractor_id' => [
+        /*'subcontractor_id' => [
             'rule' => 'notBlank',
             'required' => true,
             'message' => 'Subcontractor field is required',
             'on' => 'update'
-        ],
+        ],*/
         'first_name' => [
             'rule' => 'notBlank',
             'required' => true,
@@ -118,6 +121,7 @@ class Operator extends ImplementableModel
     public $belongsTo = [
         'Subcontractor' => [
             'className' => 'Subcontractor',
+            'foreignKey' => 'subcontractor_id',
             'dependent' => true
         ],
         'Account' => [

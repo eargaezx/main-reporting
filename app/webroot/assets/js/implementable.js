@@ -37,6 +37,8 @@
 
                 if (currentTabIndex ==  totalTabs ) {
                     $(form).find('a.next').text('Save').attr('type', 'button').addClass('btn-primary next').removeClass('submit btn-success disabled');
+                }else{
+                    $(form).find('a.next').text('Next');
                 }
             },
         });

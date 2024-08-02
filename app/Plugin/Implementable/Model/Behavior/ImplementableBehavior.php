@@ -13,11 +13,47 @@ class ImplementableBehavior extends ModelBehavior
 
         $this->implementFields($model);
         $this->implementFilters($model);
+        $this->implementActions($model);
 
 
         if (method_exists($model, 'afterImplement')) {
             $model->afterImplement();
         }
+    }
+
+    protected function implementActions($model)
+    {
+        $model->actions = array_replace_recursive(
+            [
+                'view' => [
+                    'action' => 'view',
+                    'title' => 'Ver',
+                    'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
+                    'icon' => [
+                        'class' => 'fe-eye'
+                    ]
+                ],
+                'edit' => [
+                    'action' => 'edit',
+                    'title' => 'Editar',
+                    'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
+                    'icon' => [
+                        'class' => 'fe-edit-2'
+                    ]
+                ],
+                'delete' => [
+                    'action' => 'delete',
+                    'title' => 'Borrar',
+                    'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light swal-confirm',
+                    'data-message' => '¿Desea borrar el registro?',
+                    'data' => [],
+                    'icon' => [
+                        'class' => 'fe-trash-2'
+                    ]
+                ]
+            ],
+            $model->actions
+        );
     }
 
     protected function implementFields($model)
@@ -48,7 +84,7 @@ class ImplementableBehavior extends ModelBehavior
                     $settings['options'] = [];
                 }
                 $settings['options'] = array_replace_recursive($settings['options'], $model->{$belongstToFields[$settings['fieldKey']]['modelClass']}->find('list'));
-                //echo pr($options); die();
+
             }
 
             if ($settings['modelClass'] != $model->name) {
@@ -60,7 +96,7 @@ class ImplementableBehavior extends ModelBehavior
 
             $fields[$k] = $settings;
         }
-       
+
         $model->fields = $fields;
     }
 
@@ -82,7 +118,7 @@ class ImplementableBehavior extends ModelBehavior
                 $settings['filter']['type'] = $settings['type'];
             }
 
-    
+
 
             if (!isset($settings['filter']['operator'])) {
                 $settings['filter']['operator'] = 'EQUAL';
@@ -112,8 +148,8 @@ class ImplementableBehavior extends ModelBehavior
 
     public function getFields($model, $view = null, $prefixed_model_class = true)
     {
-        $fields = [];
 
+        $fields = [];
         foreach ($model->fields as $k => $settings) {
             if (!isset($settings['showIn']) || $settings['showIn'] === FALSE)
                 continue;
@@ -135,12 +171,10 @@ class ImplementableBehavior extends ModelBehavior
                 unset($fields[$fieldName]['showIn']);
                 unset($fields[$fieldName]['fieldKey']);
                 unset($fields[$fieldName]['modelClass']);
-            }else{
+            } else {
                 $model->fields[$k]['showIn'] = FALSE;
             }
         }
-
-
 
         return $fields;
     }
@@ -297,7 +331,7 @@ class ImplementableBehavior extends ModelBehavior
                 continue;
 
 
-            if (isset($model->data[$model->name][$key]) && !empty($model->data[$model->name][$key]) && is_array($model->data[$model->name][$key]) && isset($model->data[$model->name][$key]['name']) && !empty($model->data[$model->name][$key]['name'])) {//with value
+            if (isset($model->data[$model->name][$key]) && !empty($model->data[$model->name][$key]) && ( is_array($model->data[$model->name][$key]) ) && isset($model->data[$model->name][$key]['name']) && !empty($model->data[$model->name][$key]['name'])) {//with value
                 $fileprefix = uniqid();
                 $simpledir = Router::url(['controller' => '/'], true) . '/files/' . $fileprefix . '/';
                 $folder_dir = WWW_ROOT . '/files/' . $fileprefix . '/';

@@ -14,9 +14,23 @@ class License extends ImplementableModel
     public $singularDisplayName = 'License';
     public $pluralDisplayName = 'Liceses';
 
-    public $virtualFields = array(
-        'remaining_days' => 'DATEDIFF(License.expiration_date, NOW())'
-    );
+    public $displayField = '_name';  // Especifica el campo virtual como displayField
+
+    public $virtualFields = [
+        '_name' => 'CONCAT(
+            License.name, 
+            " | ", 
+            License.users, 
+            " USERS | ", 
+            CASE
+                WHEN License.periodicity = 3 THEN "3 DAYS" 
+                WHEN License.periodicity = 7 THEN "WEEKLY"
+                WHEN License.periodicity = 30 THEN "MONTHLY"
+                WHEN License.periodicity = 365 THEN "YEARLY"
+                ELSE CONCAT(License.periodicity, " DAYS")
+            END
+        )',
+    ];
 
     /**
      * Fields settings
@@ -24,56 +38,75 @@ class License extends ImplementableModel
      */
     public $fields = [
         [
-            'fieldKey' => 'voucher',
-            'label' => 'Voucher',
-            'type' => 'file',
-            'class' => 'form-control',
-            'showIn' => ['index', 'add', 'edit', 'view'],
-            'data-plugins' => 'dropify',
-            'data-max-file-size' => '3M',
-            'searchable' => false,
-            'div' => [
-                'class' => 'mb-3 col-lg-12'
-            ]
+            'fieldKey' => 'id',
+            'label' => FALSE,
+            'type' => 'hidden',
+            'showIn' => ['edit'],
+            'show'
         ],
         [
             'fieldKey' => 'name',
-            'label' => 'Serial',
+            'label' => 'Name',
             'type' => 'text',
             'class' => 'form-control',
             'autogenerate' => true,
             'showIn' => ['index', 'add', 'edit', 'view']
         ],
         [
-            'fieldKey' => 'expiration_date',
-            'label' => 'Expiration',
-            'type' => 'text',
+            'fieldKey' => 'periodicity',
+            'label' => 'Perioodicity',
+            'type' => InputType::SELECT,
+            'options' => [
+                '' => 'SELECT A OPTION',
+                3 => '3 DAYS',
+                7 => 'WEEKLY',
+                15 => 'BIWEEKLY',
+                30 => 'MONTHLY',
+                90 => 'QUARTERLY',
+                365 => 'ANNUALLY'
+            ],
+            'showIn' => TRUE,
+            'filter' => TRUE
+        ],
+        [
+            'fieldKey' => 'price',
+            'label' => 'Price',
+            'type' => 'number',
             'class' => 'form-control',
-            'data-plugin' => 'datepicker',
             'showIn' => ['index', 'add', 'edit', 'view']
         ],
         [
-            'fieldKey' => 'max_active_accounts',
-            'label' => 'Max active',
+            'fieldKey' => 'users',
+            'label' => 'Allowed users',
             'type' => 'number',
             'class' => 'form-control',
             'showIn' => ['index', 'add', 'edit', 'view'],
-            'default' => 10
-        ],
-        [
-            'fieldKey' => 'current_active_accounts',
-            'label' => 'Current active',
-            'type' => 'number',
-            'class' => 'form-control',
-            'showIn' => ['index', 'add', 'edit', 'view'],
-            'default' => 0
         ],
         [
             'fieldKey' => 'created',
             'label' => 'Created',
-            'type' => 'text',
+            'type' => InputType::DATE,
             'showIn' => ['index', 'view'],
-            'searchable' => false
+            'sourceFormat' => 'Y-m-d',
+            'displayFormat' => 'd/m/Y',
+            'filter' => [
+                'type' => InputType::DATERANGE,
+                'operator' => 'BETWEEN',
+                'split' => ' to '
+            ],
+        ],
+        [
+            'fieldKey' => 'modified',
+            'label' => 'Modified',
+            'type' => InputType::DATE,
+            'showIn' => ['index', 'view'],
+            'sourceFormat' => 'Y-m-d',
+            'displayFormat' => 'd/m/Y',
+            'filter' => [
+                'type' => InputType::DATERANGE,
+                'operator' => 'BETWEEN',
+                'split' => ' to '
+            ],
         ],
         [
             'fieldKey' => 'status',
@@ -81,11 +114,12 @@ class License extends ImplementableModel
             'type' => 'select',
             'data-toggle' => 'select2',
             'class' => 'form-control select2',
+            'div' => InputDiv::COL_SM_12,
             'showIn' => ['index', 'add', 'edit', 'view'],
             'options' => [
                 '' => 'Empty',
-                '1' => 'Active',
-                '2' => 'Inactive'
+                true => 'Active',
+                false => 'Inactive'
             ]
         ]
     ];
@@ -103,35 +137,29 @@ class License extends ImplementableModel
                 'message' => 'This record has already been taken'
             )
         ),
-        'voucher' => array(
-            'required' => array(
-                'rule' => 'notBlank',
-                'required' => 'create', // Required only on add
-                'message' => 'Please complete this field',
-                'on' => 'create'// Specify 'on' condition to apply this rule only when adding
-            )
-        ),
         'name' => array(
             'required' => array(
                 'rule' => 'notBlank',
                 'message' => 'Please complete this field'
             )
         ),
-        'max_active_accounts' => array(
+        'users' => array(
             'required' => array(
                 'rule' => 'numeric',
                 'message' => 'Please complete this field'
             )
         ),
-        'max_current_accounts' => array(
+        'periodicity' => array(
             'required' => array(
                 'rule' => 'numeric',
                 'message' => 'Please complete this field'
             )
         ),
-        'expiration_date' => array(
-            'rule' => array('date', 'ymd'), // Validate date format as YYYY-MM-DD
-            'message' => 'Please enter a valid date in YYYY-MM-DD format.'
+        'price' => array(
+            'required' => array(
+                'rule' => 'numeric',
+                'message' => 'Please complete this field'
+            )
         ),
         'status' => array(
             'required' => array(
@@ -150,12 +178,12 @@ class License extends ImplementableModel
      * This section describes the settings for defining the relationshibs between models.
      */
 
-    public $hasOne = array(
+    /*public $hasMany = array(
         'Suncontractor' => array(
             'className' => 'Subcontractor',
             'foreignKey' => 'license_id',
             'dependent' => false
         )
-    );
+    );*/
 
 }

@@ -39,13 +39,13 @@ class EmailConfig {
 
     public $default = array(
         'transport' => 'Smtp',
-        'from' => array('info@mercadito-naranja.com' => 'Mercadito Naranja'),
+        'from' => array('system@axcode.tech' => 'Systems'),
         'host' => 'smtp.ionos.mx',
-        //'tls' => true,
+        'tls' => true,
         'port' => 587,
         'timeout' => 60,
-        'username' => 'info@mercadito-naranja.com',
-        'password' => 'Backstreet.1992',
+        'username' => 'system@axcode.tech',
+        'password' => 'sic.22309',
         //'client' => null,
         //'log' => false,
         //'charset' => 'utf-8',

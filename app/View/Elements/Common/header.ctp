@@ -21,48 +21,30 @@
                 </a>
             </div>
 
+            <!-- Dropdown Menu -->
             <?php if (AuthComponent::user('AccountType.name') == 'Root'): ?>
+
                 <!-- Dropdown Menu -->
-                <div class="dropdown d-none d-xl-block">
-                    <a class="nav-link dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown" href="#"
-                        role="button" aria-haspopup="false" aria-expanded="false">
-                        <i class="fe-settings me-1"></i>
-                        Settings
-                        <i class="mdi mdi-chevron-down ms-1"></i>
+                <div class=" d-none d-xl-block">
+                    <a class="nav-link  waves-effect waves-light"
+                        href="<?php echo $this->Html->url(array('controller' => 'Licenses', 'action' => 'index')); ?>"
+                        role="button" aria-haspopup="false">
+                        <i class="mdi mdi-key-chain"></i>
+                        Licenses
                     </a>
-                    <div class="dropdown-menu">
-                        <!-- item-->
-                        <a href="<?php echo $this->Html->url(array('controller' => 'AccountTypes', 'action' => 'index')); ?>"
-                            class="dropdown-item">
-                            <i class="mdi mdi-key"></i>
-                            <span>Profiles</span>
-                        </a>
-
-                        <a href="<?php echo $this->Html->url(array('controller' => 'Accounts', 'action' => 'index')); ?>"
-                            class="dropdown-item">
-                            <i class="mdi mdi-account-multiple-outline"></i>&nbsp;
-                            <span>System Accounts</span>
-                        </a>
-
-                        <!-- item-->
-                        <a href="<?php echo $this->Html->url(array('controller' => 'Subcontractors', 'action' => 'index')); ?>"
-                            class="dropdown-item">
-                            <i class="mdi mdi-office-building"></i>
-                            <span>Subcontractors</span>
-                        </a>
-
-                        <a href="<?php echo $this->Html->url(array('controller' => 'Licenses', 'action' => 'index')); ?>"
-                            class="dropdown-item">
-                            <i class="mdi mdi-key-chain"></i>
-                            <span>Licenses</span>
-                        </a>
-                    </div>
                 </div>
 
-
-                <!-- Dropdown Menu -->
+                <div class=" d-none d-xl-block">
+                    <a class="nav-link  waves-effect waves-light"
+                        href="<?php echo $this->Html->url(array('controller' => 'Subcontractors', 'action' => 'index')); ?>"
+                        role="button" aria-haspopup="false">
+                        <i class="mdi mdi-office-building"></i>
+                        Subcontractors
+                    </a>
+                </div>
 
             <?php endif; ?>
+
             <!-- Dropdown Menu -->
             <div class=" d-none d-xl-block">
                 <a class="nav-link  waves-effect waves-light"

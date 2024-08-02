@@ -65,7 +65,7 @@
                     <td bgcolor="#ffffff" align="left" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
                         <p style="margin: 0;">
                             En hora buena <?= $data['name'] ?>. 
-                            Estas a un paso de acceder tu cuenta en tu dispositivo <?= $data['device'] ?>.
+                            Estas a un paso de acceder tu cuenta en tu dispositivo.
                         </p>
                     </td>
                 </tr>
@@ -74,7 +74,7 @@
                     <td bgcolor="#ffffff" align="left" style="padding: 0px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
                         <p style="margin: 0;">
                             Ahora simplemente presiona el boton debajo para activar tu cuenta,
-                            por seguridad recuerda realizar este proceso en tu dispositvo <?= $data['device'] ?> donde deseas ingresar.
+                            por seguridad recuerda realizar este proceso en tu dispositvo donde deseas ingresar.
                         </p>
                     </td>
                 </tr>

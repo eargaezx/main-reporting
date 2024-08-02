@@ -128,6 +128,7 @@ class AccountsController extends ImplementableController
 
         $Account = $this->Account->findByToken($token);
 
+
         if (!isset($Account['Account'])) {
             $this->Session->setFlash('Tu cuenta no ha podido ser activada, probablemente ya ha sido activada con anterioridad o el token es inválido, intenta iniciar sesión, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'login');
             return $this->redirect(Router::url(['action' => 'login'], true));
@@ -136,33 +137,15 @@ class AccountsController extends ImplementableController
         //update
         $this->Account->id = $Account['Account']['id'];
 
-        if ($this->Account->saveField('status', 1) && $this->Account->saveField('password', $token) /* && $this->Account->saveField('token', NULL) */) {
+        if ( $this->Account->saveField('status', 1) && $this->Account->saveField('token', NULL) ) {
 
             $this->Session->setFlash('Tu cuenta ha sido verificada correctamente, Ahora puedes ingresar usando tu correo y contraseña', null, null, 'login');
 
             $this->layout = false;
-
-            if ($Account['Account']['account_type_id'] == 3) {
-                header("Location: mercaditonaranjabusiness://activate?username=" . $Account['Account']['username'] . "&token=" . $token);
-
-                die();
-            }
-
-            if ($Account['Account']['account_type_id'] == 5) {
-                header("Location: mercaditonaranjadelivery://activate?username=" . $Account['Account']['username'] . "&token=" . $token);
-                die();
-            }
-
-
-            if ($Account['Account']['account_type_id'] == 6) {
-
-                header("Location: mercaditonaranjacustomer://activate?username=" . $Account['Account']['username'] . "&token=" . $token);
-                die();
-            }
         } else {
             $this->Session->setFlash('Tu cuenta no ha podido ser activada, probablemente ya ha sido activada con anterioridad o el token es inválido, intenta iniciar sesión, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'login');
         }
-        //$this->redirect(Router::url(['Controller' => 'Accounts', 'action' => 'login'], true));
+        $this->redirect(Router::url(['Controller' => 'Accounts', 'action' => 'login'], true));
     }
 
     public function recover()
