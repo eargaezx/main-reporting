@@ -29,7 +29,7 @@ class Account extends ImplementableModel
             'type' => 'hidden',
             'showIn' => ['edit']
         ],
-        [
+        'account_type_id' => [
             'fieldKey' => 'account_type_id',
             'label' => 'Perfil',
             'type' => InputType::SELECT,
@@ -161,8 +161,10 @@ class Account extends ImplementableModel
 
     public function beforeImplement()
     {
-        if (AuthComponent::user() && AuthComponent::user('account_type_id') != 1) {
-            unset($this->fields[1]['options'][1]);
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Root') {
+            unset($this->fields['account_type_id']['options']['']);
+            $this->fields['account_type_id']['disabled'] = 'true';
+            $this->AccountType->conditions['AccountType.name'] = 'Technician';
         }
     }
 
@@ -172,10 +174,6 @@ class Account extends ImplementableModel
             return true;
         return false;
     }
-
-    /* LifeCycle Model Callbacks */
-
-
 
     public function beforeSave($options = array())
     {
@@ -210,7 +208,6 @@ class Account extends ImplementableModel
             $data['Account']['token']
         ], true);
 
-
         $this->sendEmail([
             'to' => [
                 $data['Account']['username']
@@ -227,5 +224,4 @@ class Account extends ImplementableModel
             ]
         ]);
     }
-
 }

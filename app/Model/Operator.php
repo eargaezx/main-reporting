@@ -29,11 +29,11 @@ class Operator extends ImplementableModel
             'showIn' => TRUE,
             // 'bindValue' => 'Subcontractor.name',
             'filter' => TRUE,
-           'options' => [
+            'options' => [
                 '' => 'SELECT A OPTION',
             ]
         ],
-        [
+        'account_type_id' => [
             'fieldKey' => 'account_type_id',
             'modelClass' => Account::class
         ],
@@ -76,7 +76,7 @@ class Operator extends ImplementableModel
             'fieldKey' => 'status',
             'modelClass' => Account::class,
             'div' => InputDiv::COL_SM_12,
-           
+
         ],
         [
             'fieldKey' => 'created',
@@ -140,6 +140,22 @@ class Operator extends ImplementableModel
 
 
     /* Logic custom functions */
+    public function beforeImplement()
+    {
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Root') {
+            unset($this->fields['subcontractor_id']['options']['']);
+            $this->fields['subcontractor_id']['disabled'] = 'true';
+            $this->Subcontractor->conditions['Subcontractor.id'] = AuthComponent::user('Operator.subcontractor_id');
+            $this->conditions['Operator.subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+            unset($this->fields['subcontractor_id']);
+            unset($this->fields['account_type_id']);
 
+            foreach ($this->data as &$dataItem) {
+                // Verifica si subcontractor_id está presente y configúralo a 1
+                $dataItem['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+                $dataItem['account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
+            }
+        }
+    }
 
 }

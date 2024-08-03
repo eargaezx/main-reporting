@@ -7,7 +7,7 @@ class PagesController extends AppController {
     public $uses = ['Order', 'Business'];
 
     public function display() {
-        $this->layout = 'start';
+        //$this->layout = 'start';
         
         $path = func_get_args();
         $count = count($path);

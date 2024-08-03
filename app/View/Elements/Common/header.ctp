@@ -93,7 +93,7 @@
                             <?= AuthComponent::user('AccountType.name') ?>
                         </strong> &nbsp
                         <br />
-                        <?= AuthComponent::user('name') ?> &nbsp
+                        <?= empty(AuthComponent::user('Operator.name'))? 'System' : AuthComponent::user('Operator.name') ?> &nbsp
                         <br />
                         <?= AuthComponent::user('username') ?> &nbsp
                     </span>

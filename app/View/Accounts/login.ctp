@@ -78,7 +78,7 @@
                                     <div class="col-12">
                                         <button class="btn btn-primary waves-effect waves-light col-sm-6" type="submit"
                                             style="background-color: #eb9534!important">
-                                            Ingresar
+                                            Login  
                                         </button>
                                     </div>
                                 </div>
