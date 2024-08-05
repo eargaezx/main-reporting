@@ -25,15 +25,15 @@ class FilterableComponent extends Component
         $this->controller->Session = $this->Session;
 
         $this->buildData();
-        $this->buildFilters();
+        $this->buildFilters($controller);
 
         parent::initialize($controller);
     }
 
-    public function implement()
+    public function implement(\Controller $controller)
     {
         $this->buildData();
-        $this->buildFilters();
+        $this->buildFilters($controller);
     }
 
     public function getFilters()
@@ -79,7 +79,7 @@ class FilterableComponent extends Component
 
 
 
-    protected function buildFilters()
+    protected function buildFilters(\Controller $controller)
     {
         if (empty($this->controller->{$this->controller->modelClass}->filters)) {
             return;
@@ -157,8 +157,10 @@ class FilterableComponent extends Component
         }
 
 
-        $this->controller->{$this->controller->modelClass}->conditions = array_replace($conditions, isset($this->controller->{$this->controller->modelClass}->conditions) ? $this->controller->{$this->controller->modelClass}->conditions : []);
 
+      
+        $controller->{$controller->modelClass}->conditions = array_replace($conditions, isset($controller->{$controller->modelClass}->conditions) ? $controller->{$controller->modelClass}->conditions : []);
+        
         //$this->controller->{$this->controller->modelClass}->conditions = $conditions;
         $this->controller->request->data['named']['filter'] = $values;
     }

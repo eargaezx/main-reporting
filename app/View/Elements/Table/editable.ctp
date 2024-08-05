@@ -21,7 +21,7 @@
         </div>
         <div class="col-sm-6 text-right">
             <button id="addToTable-<?= $unique_id ?>" class="btn btn-default btn-sm" style="padding: .15rem .25rem;">
-                Agregar
+                Add
             </button>
         </div>
     </div>

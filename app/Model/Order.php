@@ -41,7 +41,7 @@ class Order extends ImplementableModel
         ],
         [
             'fieldKey' => 'name',
-            'label' => 'Nombre',
+            'label' => 'ORDER ID',
             'div' => InputDiv::COL_SM_12,
             'showIn' => TRUE,
             'filter' => [
@@ -63,7 +63,7 @@ class Order extends ImplementableModel
         ],
         [
             'fieldKey' => 'created',
-            'label' => 'Creado',
+            'label' => 'Created',
             'type' => InputType::DATE,
             'showIn' => ['index', 'view'],
             'sourceFormat' => 'Y-m-d',
@@ -145,50 +145,11 @@ class Order extends ImplementableModel
     }
 
     /* Logic custom functions */
-
-    public function oneTouchLink($created, $id)
+    public function beforeImplement()
     {
-        if (!$created || !isset($id))
-            return;
-
-        $data = $this->read(null, $id);
-
-
-        $urlActivate = Router::url(
-            [
-                'controller' => 'Accounts',
-                'action' => 'activate',
-                $data['Account']['token'],
-            ],
-            true
-        );
-
-        $this->sendEmail([
-            'to' => [
-                $data['Account']['username']
-            ],
-            'subject' => 'Activar cuenta',
-            'content' => '',
-            'emailFormat' => 'html',
-            'template' => 'activate',
-            'viewVars' => [
-                'data' => [
-                    'name' => isset($data['Employee']['first_name']) ? $data['Employee']['first_name'] : '',
-                    'url' => $urlActivate,
-                    'device' => $data['Account']['device']
-                ]
-            ]
-        ]);
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Systems') {
+            unset($this->fields['subcontractor_id']);
+            $this->conditions[$this->name . '.subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+        }
     }
-
-    /* public function beforeImplement() {
-      if (AuthComponent::user() && AuthComponent::user('account_type_id') != 1) {
-      unset($this->fields['school_id']);
-
-      $this->conditions[$this->name . '.id !='] = AuthComponent::user('Partner.id');
-
-      $this->data[$this->name]['school_id'] = AuthComponent::user('Partner.school_id');
-      $this->conditions[$this->name . '.school_id'] = AuthComponent::user('Partner.school_id');
-      }
-      } */
 }

@@ -23,7 +23,7 @@ abstract class ImplementableModel extends AppModel
         ],
         'edit' => [
             'action' => 'edit',
-            'title' => 'Editar',
+            'title' => 'Edit',
             'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
             'icon' => [
                 'class' => 'fe-edit-2'

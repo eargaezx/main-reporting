@@ -22,7 +22,7 @@
             </div>
 
             <!-- Dropdown Menu -->
-            <?php if (AuthComponent::user('AccountType.name') == 'Root'): ?>
+            <?php if (AuthComponent::user('AccountType.name') == 'Systems'): ?>
 
                 <!-- Dropdown Menu -->
                 <div class=" d-none d-xl-block">
@@ -31,6 +31,16 @@
                         role="button" aria-haspopup="false">
                         <i class="mdi mdi-key-chain"></i>
                         Licenses
+                    </a>
+                </div>
+
+                
+                <div class=" d-none d-xl-block">
+                    <a class="nav-link  waves-effect waves-light"
+                        href="<?php echo $this->Html->url(array('controller' => 'Contractors', 'action' => 'index')); ?>"
+                        role="button" aria-haspopup="false">
+                        <i class="mdi mdi-home"></i>
+                        Contractors
                     </a>
                 </div>
 
@@ -51,7 +61,7 @@
                     href="<?php echo $this->Html->url(array('controller' => 'Operators', 'action' => 'index')); ?>"
                     role="button" aria-haspopup="false">
                     <i class="mdi mdi-account-multiple-outline"></i>&nbsp;
-                    Subcontractor users
+                    Technicians
                 </a>
             </div>
 
@@ -93,7 +103,7 @@
                             <?= AuthComponent::user('AccountType.name') ?>
                         </strong> &nbsp
                         <br />
-                        <?= empty(AuthComponent::user('Operator.name'))? 'System' : AuthComponent::user('Operator.name') ?> &nbsp
+                        <?= empty(AuthComponent::user('Operator.name'))? 'SysAdmin' : AuthComponent::user('Operator.name') ?> &nbsp
                         <br />
                         <?= AuthComponent::user('username') ?> &nbsp
                     </span>

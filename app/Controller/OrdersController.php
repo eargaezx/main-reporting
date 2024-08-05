@@ -15,5 +15,8 @@ class OrdersController extends ImplementableController
         ],
     ];
 
+    public function maps(){
+
+    }
 
 }

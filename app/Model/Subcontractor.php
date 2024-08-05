@@ -34,7 +34,7 @@ class Subcontractor extends ImplementableModel
         ],
         [
             'fieldKey' => 'name',
-            'label' => 'Nombre',
+            'label' => 'Name',
             'autocomplete' => 'off',
             'div' => InputDiv::COL_SM_12,
             'showIn' => TRUE,
@@ -46,7 +46,7 @@ class Subcontractor extends ImplementableModel
         [
             'fieldKey' => 'created',
             'type' => 'text',
-            'label' => 'Creado',
+            'label' => 'Created',
             'showIn' => ['view'],
             'filter' => [
                 'type' => InputType::DATERANGE,
@@ -57,7 +57,7 @@ class Subcontractor extends ImplementableModel
         [
             'fieldKey' => 'modified',
             'type' => 'text',
-            'label' => 'Modificado',
+            'label' => 'Modified',
             'showIn' => ['view']
         ],
         [
@@ -77,7 +77,7 @@ class Subcontractor extends ImplementableModel
         ],
         [
             'fieldKey' => 'comments',
-            'label' => 'Comentarios',
+            'label' => 'Comments',
             'div' => InputDiv::COL_SM_12,
             'rows' => 4,
             'showIn' => ['add', 'edit', 'view']

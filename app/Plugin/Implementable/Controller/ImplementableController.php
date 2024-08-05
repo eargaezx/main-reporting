@@ -113,7 +113,7 @@ abstract class ImplementableController extends AppController
                     $this->redirect(Router::url($this->settings[$this->params['action']]['redirect'], true));
                 }
             } else {
-                //echo pr($this->{$this->modelClass}->validationErrors);
+                echo pr($this->{$this->modelClass}->validationErrors);
                 $errors = 'La operación se realizó correctamente.';
                 if ($this->request->ext == 'json') {
                     $errors = $this->{$this->modelClass}->validationErrors;

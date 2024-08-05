@@ -12,10 +12,10 @@ App::uses('ImplementableModel', 'Implementable.Model');
 class License extends ImplementableModel
 {
     public $singularDisplayName = 'License';
-    public $pluralDisplayName = 'Liceses';
+    public $pluralDisplayName = 'Licenses';
 
     public $displayField = '_name';  // Especifica el campo virtual como displayField
-
+ 
     public $virtualFields = [
         '_name' => 'CONCAT(
             License.name, 

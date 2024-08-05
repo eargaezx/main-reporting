@@ -6,6 +6,9 @@ class Operator extends ImplementableModel
 {
 
     public $singularDisplayName = 'Technician';
+    
+    public $pluralDisplayName = 'Technicians';
+    public $displayField = 'name';
     public $virtualFields = [
         'name' => 'CONCAT(first_name," ",last_name)',
     ];
@@ -131,6 +134,13 @@ class Operator extends ImplementableModel
         ]
     ];
 
+    public $hasMany = [
+        'Order' => [
+            'className' => 'Order',
+            'dependent' => true,
+        ]
+    ];
+
     public function afterSave($created, $options = array())
     {
         ///$this->oneTouchLink($created, $this->id);
@@ -142,18 +152,19 @@ class Operator extends ImplementableModel
     /* Logic custom functions */
     public function beforeImplement()
     {
-        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Root') {
+
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Systems') {
             unset($this->fields['subcontractor_id']['options']['']);
             $this->fields['subcontractor_id']['disabled'] = 'true';
             $this->Subcontractor->conditions['Subcontractor.id'] = AuthComponent::user('Operator.subcontractor_id');
             $this->conditions['Operator.subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+            $this->conditions['Operator.id !='] = AuthComponent::user('Operator.id');
             unset($this->fields['subcontractor_id']);
             unset($this->fields['account_type_id']);
 
             foreach ($this->data as &$dataItem) {
                 // Verifica si subcontractor_id está presente y configúralo a 1
                 $dataItem['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
-                $dataItem['account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
             }
         }
     }

@@ -35,7 +35,7 @@ class ImplementableBehavior extends ModelBehavior
                 ],
                 'edit' => [
                     'action' => 'edit',
-                    'title' => 'Editar',
+                    'title' => 'Edit',
                     'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
                     'icon' => [
                         'class' => 'fe-edit-2'
@@ -288,6 +288,7 @@ class ImplementableBehavior extends ModelBehavior
     public function beforeFind(\Model $model, $query)
     {
         $query['conditions'] = array_merge($model->conditions, (isset($query['conditions']) ? $query['conditions'] : []));
+        
         //$query['offset'] = (($this->limit * $this->page) - $this->limit);
         //$query['limit'] = $this->limit;
 

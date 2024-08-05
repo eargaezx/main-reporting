@@ -1,6 +1,6 @@
 <div class="card ">
     <div class="card-header card-header-transparent card-header-bordered font-weight-500 font-size-17">
-        <?= 'Editar ' . $singularDisplayName ?>
+        <?= 'Edit ' . $singularDisplayName ?>
     </div>
     <div class="card-block p-4">
 

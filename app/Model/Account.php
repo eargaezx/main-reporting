@@ -17,7 +17,6 @@ class Account extends ImplementableModel
 
     public $singularDisplayName = 'System Account';
     public $pluralDisplayName = 'System Accounts';
-    public $displayField = 'name';
     public $virtualFields = [
         //'name' => 'CONCAT(Account.first_name," ",Account.last_name)',
         //'phone' => 'CONCAT(Account.phone_country," ",Account.phone_number)'
@@ -48,7 +47,6 @@ class Account extends ImplementableModel
         ],
         [
             'fieldKey' => 'password',
-            'autocomplete' => 'nope',
             'label' => 'Clave de acceso',
             'showIn' => ['add', 'edit'],
         ],
@@ -74,7 +72,7 @@ class Account extends ImplementableModel
         ],
         [
             'fieldKey' => 'created',
-            'label' => 'Creado',
+            'label' => 'Created',
             'type' => InputType::DATERANGE,
             'showIn' => ['index', 'view'],
             'sourceFormat' => 'Y-m-d',
@@ -116,7 +114,6 @@ class Account extends ImplementableModel
         'password' => [
             'notBlank' => [
                 'rule' => 'notBlank',
-                'required' => true,
                 'message' => 'El campo contraseña es requerido',
                 'on' => 'create'
             ],
@@ -128,7 +125,6 @@ class Account extends ImplementableModel
         'repeated_password' => [
             'notBlank' => [
                 'rule' => 'notBlank',
-                'required' => true,
                 'message' => 'El campo repetir es requerido',
                 'on' => 'create'
             ],
@@ -141,13 +137,16 @@ class Account extends ImplementableModel
             'rule' => 'notBlank',
             //'required' => true,
             'message' => 'El campo estatus campo es requerido',
-             'on' => 'create'
+            'on' => 'create'
         ]
     ];
     public $hasOne = [
         'Operator' => [
             'className' => 'Operator',
-            'foreignKey' => 'account_id',
+            'dependent' => true
+        ],
+        'Partner' => [
+            'className' => 'Partner',
             'dependent' => true
         ],
     ];
@@ -159,12 +158,17 @@ class Account extends ImplementableModel
         ]
     ];
 
+
+
     public function beforeImplement()
     {
-        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Root') {
+        if (AuthComponent::user())
+            $this->conditions['Account.account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
+
+
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Systems') {
             unset($this->fields['account_type_id']['options']['']);
             $this->fields['account_type_id']['disabled'] = 'true';
-            $this->AccountType->conditions['AccountType.name'] = 'Technician';
         }
     }
 
@@ -173,6 +177,14 @@ class Account extends ImplementableModel
         if ($this->data[$this->name]['password'] == $this->data[$this->name]['repeated_password'])
             return true;
         return false;
+    }
+
+    public function beforeValidate($options = array())
+    {
+        foreach ($this->data as &$dataItem) {
+            // Verifica si subcontractor_id está presente y configúralo a 1
+            $dataItem['account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
+        }
     }
 
     public function beforeSave($options = array())
@@ -200,6 +212,8 @@ class Account extends ImplementableModel
         if (!$created || !isset($id))
             return;
 
+        $this->Operator->virtualFields = [];
+        $this->Partner->virtualFields = [];
         $data = $this->read(null, $id);
 
         $urlActivate = Router::url([
@@ -207,6 +221,16 @@ class Account extends ImplementableModel
             'action' => 'activate',
             $data['Account']['token']
         ], true);
+
+        $name = '';
+        if (!empty($data['Operator']['first_name'])) {
+            $name = $data['Operator']['first_name'];
+        }
+
+        if (!empty($data['Partner']['first_name'])) {
+            $name = $data['Operator']['first_name'];
+        }
+
 
         $this->sendEmail([
             'to' => [
@@ -218,7 +242,7 @@ class Account extends ImplementableModel
             'template' => 'activate',
             'viewVars' => [
                 'data' => [
-                    'name' => isset($data['Operator']['first_name']) ? $data['Operator']['first_name'] : '',
+                    'name' => $name,
                     'url' => $urlActivate
                 ]
             ]

@@ -19,7 +19,7 @@ class OperatorsController extends ImplementableController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        //set redirect and condition to survey details page
+       //set redirect and condition to survey details page
         if (!empty($this->request->data['named']['filter']['subcontractor_id'])) {
             $this->Operator->fields['subcontractor_id']['showIn'] = FALSE;
             $this->Operator->fields['subcontractor_id']['default'] = $this->request->data['named']['filter']['subcontractor_id'];
@@ -39,6 +39,5 @@ class OperatorsController extends ImplementableController
             ];
         }
     }
-
 
 }

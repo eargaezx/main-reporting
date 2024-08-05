@@ -6,7 +6,7 @@ class Question extends ImplementableModel
 {
 
     public $singularDisplayName = 'Question';
-    public $pluralDisplayName = 'Question';
+    public $pluralDisplayName = 'Questions';
     public $displayField = 'question';
     public $fields = [
         [
@@ -106,7 +106,7 @@ class Question extends ImplementableModel
 
         [
             'fieldKey' => 'created',
-            'label' => 'Creado',
+            'label' => 'Created',
             'type' => InputType::DATE,
             'showIn' => ['view'],
             'sourceFormat' => 'Y-m-d',

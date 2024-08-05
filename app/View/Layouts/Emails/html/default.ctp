@@ -1,80 +1,83 @@
-<!-- THIS EMAIL WAS BUILT AND TESTED WITH LITMUS http://litmus.com -->
-<!-- IT WAS RELEASED UNDER THE MIT LICENSE https://opensource.org/licenses/MIT -->
-<!-- QUESTIONS? TWEET US @LITMUSAPP -->
 <!DOCTYPE html>
-<html>
-    <head>
-        <title></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <style type="text/css">
-            /* FONTS */
-            @media screen {
-                @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 400;
-                    src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
-                }
+<html lang="es">
 
-                @font-face {
-                    font-family: 'Lato';
-                    font-style: normal;
-                    font-weight: 700;
-                    src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/qdgUG4U09HnJwhYI-uK18wLUuEpTyoUstqEm5AMlJo4.woff) format('woff');
-                }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Correo Electrónico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-                @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 400;
-                    src: local('Lato Italic'), local('Lato-Italic'), url(https://fonts.gstatic.com/s/lato/v11/RYyZNoeFgb0l7W3Vu1aSWOvvDin1pK8aKteLpeZ5c0A.woff) format('woff');
-                }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-                @font-face {
-                    font-family: 'Lato';
-                    font-style: italic;
-                    font-weight: 700;
-                    src: local('Lato Bold Italic'), local('Lato-BoldItalic'), url(https://fonts.gstatic.com/s/lato/v11/HkF_qI1x_noxlxhrhMQYELO3LdcAZYWl9Si6vvxL-qU.woff) format('woff');
-                }
-            }
+        .header {
+            background-color: #FF8C69;
+            /* Salmon near orange */
+            color: #ffffff;
+            padding: 10px 0;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
 
-            /* CLIENT-SPECIFIC STYLES */
-            body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-            table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-            img { -ms-interpolation-mode: bicubic; }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
 
-            /* RESET STYLES */
-            img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-            table { border-collapse: collapse !important; }
-            body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+        .content {
+            padding: 20px;
+        }
 
-            /* iOS BLUE LINKS */
-            a[x-apple-data-detectors] {
-                color: inherit !important;
-                text-decoration: none !important;
-                font-size: inherit !important;
-                font-family: inherit !important;
-                font-weight: inherit !important;
-                line-height: inherit !important;
-            }
+        .content p {
+            margin-bottom: 15px;
+        }
 
-            /* MOBILE STYLES */
-            @media screen and (max-width:600px){
-                h1 {
-                    font-size: 32px !important;
-                    line-height: 32px !important;
-                }
-            }
+        .button {
+            display: inline-block;
+            background-color: #FF8C69;
+            /* Salmon near orange */
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
 
-            /* ANDROID CENTER FIX */
-            div[style*="margin: 16px 0;"] { margin: 0 !important; }
-        </style>
-    </head>
-    <body style="background-color: #f4f4f4; margin: 0 !important; padding: 0 !important;">
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666666;
+        }
+    </style>
+</head>
 
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Main Report</h1>
+        </div>
         <?= $this->fetch('content') ?>
+        <div class="footer">
+            <p>&copy; 2024 Main Report. All rights reserved.</p>
+            <p>[Dirección de la Empresa]</p>
+            <p><a href="mailto:contacto@tuempresa.com">contacto@tuempresa.com</a></p>
+        </div>
+    </div>
+</body>
 
-    </body>
 </html>
