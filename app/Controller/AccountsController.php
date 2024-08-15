@@ -38,6 +38,9 @@ class AccountsController extends ImplementableController
     public function login()
     {
 
+        $this->Account->Operator->virtualFields = [];
+        $this->Account->Partner->virtualFields = [];
+
         if ($this->request->is('post') || $this->request->is('get')) {
             if ($this->Auth->login()) {
                 $data = $this->Auth->user();
@@ -121,6 +124,10 @@ class AccountsController extends ImplementableController
 
     public function activate($token = null)
     {
+        $this->Account->virtualFields = [];
+        $this->Account->Operator->virtualFields = [];
+        $this->Account->Partner->virtualFields = [];
+
         if (empty($token)) {
             $this->Session->setFlash('Tu cuenta no ha podido ser activada, probablemente ya ha sido activada con anterioridad o el token es inválido, intenta iniciar sesión, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'login');
             return $this->redirect(Router::url(['action' => 'login'], true));

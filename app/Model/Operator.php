@@ -164,7 +164,8 @@ class Operator extends ImplementableModel
 
             foreach ($this->data as &$dataItem) {
                 // Verifica si subcontractor_id está presente y configúralo a 1
-                $dataItem['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+                if(AuthComponent::user('AccountType.name') == 'Subcontractor')
+                    $dataItem['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
             }
         }
     }

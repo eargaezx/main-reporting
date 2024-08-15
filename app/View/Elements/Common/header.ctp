@@ -34,7 +34,7 @@
                     </a>
                 </div>
 
-                
+
                 <div class=" d-none d-xl-block">
                     <a class="nav-link  waves-effect waves-light"
                         href="<?php echo $this->Html->url(array('controller' => 'Contractors', 'action' => 'index')); ?>"
@@ -55,15 +55,28 @@
 
             <?php endif; ?>
 
-            <!-- Dropdown Menu -->
-            <div class=" d-none d-xl-block">
-                <a class="nav-link  waves-effect waves-light"
-                    href="<?php echo $this->Html->url(array('controller' => 'Operators', 'action' => 'index')); ?>"
-                    role="button" aria-haspopup="false">
-                    <i class="mdi mdi-account-multiple-outline"></i>&nbsp;
-                    Technicians
-                </a>
-            </div>
+            <?php if (in_array(AuthComponent::user('AccountType.name'), ['Contractor'])): ?>
+                <div class=" d-none d-xl-block">
+                    <a class="nav-link  waves-effect waves-light"
+                        href="<?php echo $this->Html->url(array('controller' => 'Partnerships', 'action' => 'index')); ?>"
+                        role="button" aria-haspopup="false">
+                        <i class="mdi mdi-handshake"></i>
+                        Partnerships
+                    </a>
+                </div>
+            <?php endif; ?>
+
+            <?php if (in_array(AuthComponent::user('AccountType.name'), ['Systems', 'Subcontractor'])): ?>
+                <!-- Dropdown Menu -->
+                <div class=" d-none d-xl-block">
+                    <a class="nav-link  waves-effect waves-light"
+                        href="<?php echo $this->Html->url(array('controller' => 'Operators', 'action' => 'index')); ?>"
+                        role="button" aria-haspopup="false">
+                        <i class="mdi mdi-account-multiple-outline"></i>&nbsp;
+                        Technicians
+                    </a>
+                </div>
+            <?php endif; ?>
 
             <!-- Dropdown Menu -->
             <div class=" d-none d-xl-block">
@@ -103,7 +116,22 @@
                             <?= AuthComponent::user('AccountType.name') ?>
                         </strong> &nbsp
                         <br />
-                        <?= empty(AuthComponent::user('Operator.name'))? 'SysAdmin' : AuthComponent::user('Operator.name') ?> &nbsp
+                        <?php
+                        $name = 'SysAdmin';
+                        switch (AuthComponent::user('AccountType.name')) {
+                            case 'Contractor':
+                                $name = AuthComponent::user('Partner.first_name') . ' '.AuthComponent::user('Partner.last_name'); ;
+                                break;
+                            case 'Subcontractor':
+                                $name = AuthComponent::user('Operator.first_name') . ' '.AuthComponent::user('Operator.last_name'); 
+                                break;
+                            case 'Technician':
+                                $name = AuthComponent::user('Operator.name');
+                                break;
+                        }
+                        echo $name;
+                        ?>
+                        &nbsp
                         <br />
                         <?= AuthComponent::user('username') ?> &nbsp
                     </span>

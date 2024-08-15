@@ -19,6 +19,7 @@ class OperatorsController extends ImplementableController
     public function beforeFilter()
     {
         parent::beforeFilter();
+        
        //set redirect and condition to survey details page
         if (!empty($this->request->data['named']['filter']['subcontractor_id'])) {
             $this->Operator->fields['subcontractor_id']['showIn'] = FALSE;
@@ -37,6 +38,10 @@ class OperatorsController extends ImplementableController
                 'action' => 'view',
                 $this->request->data['Operator']['subcontractor_id']
             ];
+        }
+
+        if(!empty($this->request->data['Account'])){
+            $this->request->data['Account']['account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
         }
     }
 

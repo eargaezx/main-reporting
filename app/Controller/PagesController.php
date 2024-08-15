@@ -1,14 +1,36 @@
 <?php
-
 App::uses('ImplementableController', 'Implementable.Controller');
 
-class PagesController extends AppController {
+class PagesController extends AppController
+{
 
     public $uses = ['Order', 'Business'];
 
-    public function display() {
+    public function display()
+    {
         //$this->layout = 'start';
-        
+
+        $this->loadModel('License');
+        $this->loadModel('SubcontractorLicense');
+
+        $licenses = $this->License->find('all', [
+            'conditions' => ['License.status' => 'active']
+        ]);
+        $this->set('licenses', $licenses);
+
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Subcontractor') {
+            $licensing = $this->SubcontractorLicense->find(
+                'first',
+                [
+                    'conditions' => [
+                        'SubcontractorLicense.subcontractor_id' => AuthComponent::user('Operator.subcontractor_id'),
+                        'SubcontractorLicense.status' => true,
+                    ]
+                ]
+            );
+            $this->set('licensing', $licensing);
+        }
+
         $path = func_get_args();
         $count = count($path);
         if (!$count) {

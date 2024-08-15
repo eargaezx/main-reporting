@@ -20,6 +20,7 @@ class Order extends ImplementableModel
             'label' => 'Subcontractor',
             'type' => InputType::SELECT,
             'div' => InputDiv::COL_SM_12,
+            'importable' => true,
             'showIn' => TRUE,
             // 'bindValue' => 'Subcontractor.name',
             'options' => [
@@ -33,6 +34,7 @@ class Order extends ImplementableModel
             'type' => InputType::SELECT,
             'div' => InputDiv::COL_SM_12,
             'showIn' => TRUE,
+            'importable' => true,
             // 'bindValue' => 'Subcontractor.name',
             'options' => [
                 '' => 'None'
@@ -43,7 +45,7 @@ class Order extends ImplementableModel
             'fieldKey' => 'name',
             'label' => 'ORDER ID',
             'div' => InputDiv::COL_SM_12,
-            'showIn' => TRUE,
+            'showIn' => ['index', 'add', 'edit', 'view'],
             'filter' => [
                 'type' => 'LIKE'
             ]
@@ -53,11 +55,11 @@ class Order extends ImplementableModel
             'label' => 'Status',
             'type' => InputType::SELECT,
             'div' => InputDiv::COL_SM_12,
-            'showIn' => ['index', 'add', 'edit', 'view', 'import'],
+            'showIn' => ['index', 'add', 'edit', 'view'],
             'options' => [
-                '' => 'None',
-                2 => 'Pending',
-                1 => 'Completed'
+                0 => 'CREATED',
+                1 => 'PENDING',
+                2 => 'COMPLETED'
             ],
             'filter' => TRUE
         ],
@@ -74,6 +76,7 @@ class Order extends ImplementableModel
                 'split' => ' to '
             ],
         ],
+        
         [
             'fieldKey' => 'modified',
             'label' => 'Modificado',
@@ -93,7 +96,7 @@ class Order extends ImplementableModel
             'label' => 'Work Type',
             'type' => InputType::SELECT,
             'div' => InputDiv::COL_SM_12,
-            'showIn' => TRUE,
+        'showIn' => ['index', 'add', 'edit', 'view'],
             // 'bindValue' => 'Subcontractor.name',
             'options' => [
                 '' => 'None'
@@ -132,6 +135,14 @@ class Order extends ImplementableModel
         ]
     ];
 
+    public function beforeSave($options = array())
+    {
+        if (empty($this->data[$this->name]['id']) || !$this->exists($this->data[$this->name]['id'])) {
+            $this->data[$this->name]['status'] = 1;
+        }
+        return parent::beforeSave($options);
+    }
+
     public function afterSave($created, $options = array())
     {
         ///$this->oneTouchLink($created, $this->id);
@@ -147,9 +158,17 @@ class Order extends ImplementableModel
     /* Logic custom functions */
     public function beforeImplement()
     {
-        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Systems') {
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Subcontractor') {
             unset($this->fields['subcontractor_id']);
             $this->conditions[$this->name . '.subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+            $this->data[$this->name ]['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+        }
+
+
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Contractor') {
+            unset($this->fields['contractor_id']);
+            $this->conditions[$this->name .'.contractor_id'] = AuthComponent::user('Partner.contractor_id');
+            $this->data[$this->name ]['contractor_id'] = AuthComponent::user('Partner.contractor_id');
         }
     }
 }

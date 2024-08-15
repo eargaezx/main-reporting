@@ -24,15 +24,7 @@ abstract class ImplementableController extends AppController
                 ],
                 'data' => []
             ],
-            [
-                'action' => 'download',
-                'title' => 'Descargar',
-                'class' => 'btn btn-sm btn-dark waves-effect',
-                'icon' => [
-                    'class' => 'fe-download font-size-18'
-                ],
-                'data' => []
-            ],
+
             'add' =>
                 [
                     'action' => 'add',
@@ -42,7 +34,16 @@ abstract class ImplementableController extends AppController
                         'class' => 'fe-plus font-size-18'
                     ],
                     'data' => []
-                ]
+                ],
+            [
+                'action' => 'download',
+                'title' => 'Descargar',
+                'class' => 'btn btn-sm btn-dark waves-effect',
+                'icon' => [
+                    'class' => 'fe-download font-size-18'
+                ],
+                'data' => []
+            ],
         ], $this->controllerActions);
 
 
@@ -284,6 +285,69 @@ abstract class ImplementableController extends AppController
         } else {
             parent::redirect($url, $status, $exit);
         }
+    }
+
+    public function import()
+    {
+
+        if ($this->request->is('post')) {
+            $fields = $this->{$this->modelClass}->fields;
+            $importables = array_keys(array_filter($fields, function ($value) {
+                return isset($value['importable']) && $value['importable'] === true;
+            }));
+
+            $patchables = array_filter($this->request->data[$this->modelClass], function ($value) {
+                return !empty($value);
+            });
+
+            // pr($patchables);
+
+            $file = $this->request->data['Upload']['csv_file'];
+            if ($file['error'] === UPLOAD_ERR_OK) {
+
+                // Guarda el archivo en una ubicación temporal
+                move_uploaded_file($file['tmp_name'], TMP . $file['name']);
+                // Procesa el archivo CSV
+                $filePath = TMP . $file['name'];
+
+                // Array para almacenar los datos CSV
+                $csvData = array();
+
+                $file = fopen($filePath, 'r');
+
+                // Leer la primera fila como encabezados
+                $headers = fgetcsv($file);
+
+                $file = fopen($filePath, 'r');
+                while (($row = fgetcsv($file)) !== FALSE) {
+                    // Crear un array asociativo para cada fila
+                    $rowData = array();
+                    foreach ($headers as $index => $header) {
+                        if (in_array($header, $importables)) {
+                            $rowData[$header] = isset($row[$index]) ? $row[$index] : null;
+                        }
+
+                        $rowData = array_merge($rowData, $patchables);
+                    }
+                    // Agregar el array asociativo al array principal
+                    $csvData[] = $rowData;
+                }
+
+            }
+            fclose($file);
+            unset($csvData[0]);
+            // pr($this->request->data);
+            //pr($csvData);
+
+            if ($this->{$this->modelClass}->saveAll($csvData)) {
+                $this->Session->setFlash(__('The records has been imported'), 'default', ['class' => 'alert alert-success bg-success']);
+            } else {
+                $this->Session->setFlash(__('Error import records'), 'default', ['class' => 'alert alert-danger bg-danger']);
+            }
+
+        }
+
+        $this->render('../Elements/Components/import');
     }
 
 }

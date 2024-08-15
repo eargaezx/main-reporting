@@ -162,8 +162,8 @@ class Account extends ImplementableModel
 
     public function beforeImplement()
     {
-        if (AuthComponent::user())
-            $this->conditions['Account.account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
+        //if (AuthComponent::user())
+            //$this->conditions['Account.account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
 
 
         if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Systems') {
@@ -179,13 +179,7 @@ class Account extends ImplementableModel
         return false;
     }
 
-    public function beforeValidate($options = array())
-    {
-        foreach ($this->data as &$dataItem) {
-            // Verifica si subcontractor_id está presente y configúralo a 1
-            $dataItem['account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
-        }
-    }
+
 
     public function beforeSave($options = array())
     {
