@@ -4,17 +4,46 @@ App::uses('ImplementableModel', 'Implementable.Model');
 
 class Subcontractor extends ImplementableModel
 {
-
     public $singularDisplayName = "Subcontractor";
     public $pluralDisplayName = "Subcontractors";
 
+    public $virtualFields = [
+        'active_licensing' => '
+             SELECT CASE 
+                    WHEN MAX(SubcontractorLicense.end_date) >= NOW() 
+                    THEN "CURRENT" 
+                    ELSE "EXPIRED" 
+                END
+            FROM subcontractor_licenses AS SubcontractorLicense 
+            INNER JOIN licenses AS License ON License.id = SubcontractorLicense.license_id
+            WHERE SubcontractorLicense.subcontractor_id = Subcontractor.id
+            AND SubcontractorLicense.end_date >= NOW()
+        ',
+        'active_license_users' => '
+            SELECT CONCAT(SubcontractorLicense.current_users, "/", SubcontractorLicense.max_users)
+            FROM subcontractor_licenses AS SubcontractorLicense 
+            WHERE SubcontractorLicense.subcontractor_id = Subcontractor.id 
+            AND SubcontractorLicense.end_date >= NOW()
+            ORDER BY SubcontractorLicense.end_date DESC
+            LIMIT 1 ',
+    ];
+
     public $actions = [
         'edit' => [
-            'action' => 'setup',
+            'action' => 'edit',
             'title' => 'Edit',
-            'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
             'icon' => [
                 'class' => 'fe-edit-2'
+            ]
+        ],
+        'licensing' => [
+            'controller' => 'SubcontractorLicenses',
+            'action' => 'licensing',
+            'title' => 'Licensing',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
+            'icon' => [
+                'class' => 'fe-refresh-ccw'
             ]
         ],
     ];
@@ -42,6 +71,33 @@ class Subcontractor extends ImplementableModel
                 'operator' => 'LIKE',
                 'or' => TRUE
             ]
+        ],
+        [
+            'fieldKey' => 'licensing',
+            'label' => 'Licensing',
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => ['view', 'index'],
+            'filter' => FALSE
+        ],
+        [
+            'fieldKey' => 'active_licensing',
+            'label' => 'Licensing status',
+            'type' => InputType::SELECT,
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => ['view', 'index'],
+            'filter' => TRUE,
+            'options' => [
+                '' => 'SELECT A OPTION',
+                'CURRENT' => 'CURRENT',
+                'EXPIRED' => 'EXPIRED',
+            ],
+        ],
+        [
+            'fieldKey' => 'active_license_users',
+            'label' => 'Users',
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => ['view', 'index'],
+            'filter' => FALSE,
         ],
         [
             'fieldKey' => 'created',
@@ -98,21 +154,29 @@ class Subcontractor extends ImplementableModel
             'noBlank' => [
                 'rule' => 'notBlank',
                 'message' => 'El campo estatus es requerido',
-                 'on' => 'create'
+                'on' => 'create'
             ]
         ],
     ];
     public $hasMany = [
         'Operator' => [
             'className' => 'Operator',
-            'dependent' => true,
+            'dependent' => false,
             //'conditions' => 'Employee.account_type_id = 5',
-        ]
+        ],
+        'Partnership' => [
+            'className' => 'Partnership',
+            'dependent' => true,
+        ],
+        'Order' => [
+            'className' => 'Order',
+            'dependent' => true,
+        ],
     ];
     public $hasOne = [
         'Admin' => [
             'className' => 'Operator',
-            'dependent' => true,
+            'dependent' => false,
             'conditions' => 'Admin.owner = 1',
         ],
         'SubcontractorLicense' => [
@@ -133,9 +197,79 @@ class Subcontractor extends ImplementableModel
 
     public function beforeImplement()
     {
-        if (AuthComponent::user() && AuthComponent::user('account_type_id') == 6) {
-            $this->data[$this->name]['customer_id'] = AuthComponent::user('Customer.id');
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Systems') {
+            $this->virtualFields = [
+                'active_licensing' => '
+                    SELECT CASE 
+                        WHEN MAX(SubcontractorLicense.end_date) >= NOW() 
+                        THEN "CURRENT" 
+                        ELSE "EXPIRED" 
+                    END
+                    FROM subcontractor_licenses AS SubcontractorLicense 
+                    WHERE SubcontractorLicense.subcontractor_id = Subcontractor.id 
+                    AND SubcontractorLicense.end_date >= NOW()
+                ',
+                'active_license_users' => '
+                SELECT CONCAT(SubcontractorLicense.current_users, "/", SubcontractorLicense.max_users)
+                FROM subcontractor_licenses AS SubcontractorLicense 
+                WHERE SubcontractorLicense.subcontractor_id = Subcontractor.id 
+                AND SubcontractorLicense.end_date >= NOW()
+                ORDER BY SubcontractorLicense.end_date DESC
+                LIMIT 1
+            '
+            ];
         }
+    }
+
+
+
+
+    public function afterDelete($options = [])
+    {
+
+        $Account = ClassRegistry::init('Account');
+
+        $operators = $this->Operator->find('all', [
+            'conditions' => [
+                'Operator.subcontractor_id' => $this->id
+            ]
+        ]);
+
+        $operatorsIds = Hash::extract($operators, '{n}.Operator.id');
+        $accountIds = Hash::extract($operators, '{n}.Operator.account_id');
+
+
+        $Account->deleteAll([
+            'Account.id' => $accountIds
+        ], $cascade = false, $callbacks = false);
+
+        $this->Operator->deleteAll([
+            'Operator.id' => $operatorsIds
+        ], $cascade = false, $callbacks = false);
+
+        $this->SubcontractorLicense->deleteAll([
+            'SubcontractorLicense.subcontractor_id' => $this->id
+        ], $cascade = false, $callbacks = false);
+
+        $this->Order->deleteAll([
+            'Order.subcontractor_id' => $this->id
+        ], $cascade = false, $callbacks = false);
+
+        parent::afterDelete($options);
+    }
+
+
+    public function afterFind($results, $primary = false)
+    {
+        foreach ($results as $key => $val) {
+            if (isset($val['SubcontractorLicense'])) {
+                $licensing = $this->SubcontractorLicense->find('first', [
+                    'conditions' => ['SubcontractorLicense.id' => $val['SubcontractorLicense']['id']]
+                ]);
+                $results[$key][$this->name]['licensing'] = $licensing['License']['name'];
+            }
+        }
+        return $results;
     }
 
 

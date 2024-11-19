@@ -13,10 +13,12 @@ final class InputType {
         'class' => 'form-control select2',
         'data-toggle' => 'select2',
     ];
+    
     const SELECTMULTI = [
         'type' => 'select',
-        'class' => 'form-control',
-        'data-plugin' => 'select2',
+        'class' => 'form-control select2',
+        //data-plugin' => 'select2',
+        'data-toggle' => 'select2',
         'multiple' => 'multiple',
     ];
     const DATE = [

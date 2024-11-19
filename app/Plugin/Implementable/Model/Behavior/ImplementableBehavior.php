@@ -25,35 +25,39 @@ class ImplementableBehavior extends ModelBehavior
     {
         $model->actions = array_replace_recursive(
             [
-                'view' => [
-                    'action' => 'view',
-                    'title' => 'Ver',
-                    'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
-                    'icon' => [
-                        'class' => 'fe-eye'
-                    ]
-                ],
-                'edit' => [
-                    'action' => 'edit',
-                    'title' => 'Edit',
-                    'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
-                    'icon' => [
-                        'class' => 'fe-edit-2'
-                    ]
-                ],
                 'delete' => [
+                    'confirm' => true,
                     'action' => 'delete',
                     'title' => 'Borrar',
-                    'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light swal-confirm',
+                    'class' => 'btn btn-sm btn-warning waves-effect waves-light',
                     'data-message' => '¿Desea borrar el registro?',
                     'data' => [],
                     'icon' => [
                         'class' => 'fe-trash-2'
                     ]
-                ]
+                ],
+
+                'edit' => [
+                    'action' => 'edit',
+                    'title' => 'Edit',
+                    'class' => 'btn btn-sm btn-warning waves-effect waves-light',
+                    'icon' => [
+                        'class' => 'fe-edit-2'
+                    ]
+                ],
+
+                'view' => [
+                    'action' => 'view',
+                    'title' => 'Ver',
+                    'class' => 'btn btn-sm btn-warning waves-effect waves-light',
+                    'icon' => [
+                        'class' => 'fe-eye'
+                    ]
+                ],
             ],
             $model->actions
         );
+        $model->actions = array_reverse($model->actions);
     }
 
     protected function implementFields($model)
@@ -287,8 +291,11 @@ class ImplementableBehavior extends ModelBehavior
 
     public function beforeFind(\Model $model, $query)
     {
+        if (method_exists($model, 'beforeImplement')) {
+            $model->beforeImplement();
+        }
+
         $query['conditions'] = array_merge($model->conditions, (isset($query['conditions']) ? $query['conditions'] : []));
-        
         //$query['offset'] = (($this->limit * $this->page) - $this->limit);
         //$query['limit'] = $this->limit;
 
@@ -311,10 +318,6 @@ class ImplementableBehavior extends ModelBehavior
                         $results[$key][$model->alias][$fieldkey] = date($displayFormat, strtotime($results[$key][$model->alias][$fieldkey]));
                     }
                 }
-
-
-
-
             }
         }
         return $results;
@@ -332,7 +335,7 @@ class ImplementableBehavior extends ModelBehavior
                 continue;
 
 
-            if (isset($model->data[$model->name][$key]) && !empty($model->data[$model->name][$key]) && ( is_array($model->data[$model->name][$key]) ) && isset($model->data[$model->name][$key]['name']) && !empty($model->data[$model->name][$key]['name'])) {//with value
+            if (isset($model->data[$model->name][$key]) && !empty($model->data[$model->name][$key]) && (is_array($model->data[$model->name][$key])) && isset($model->data[$model->name][$key]['name']) && !empty($model->data[$model->name][$key]['name'])) {//with value
                 $fileprefix = uniqid();
                 $simpledir = Router::url(['controller' => '/'], true) . '/files/' . $fileprefix . '/';
                 $folder_dir = WWW_ROOT . '/files/' . $fileprefix . '/';

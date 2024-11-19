@@ -5,13 +5,16 @@ App::uses('ImplementableModel', 'Implementable.Model');
 class Operator extends ImplementableModel
 {
 
-    public $singularDisplayName = 'Technician';
-    
-    public $pluralDisplayName = 'Technicians';
+    public $singularDisplayName = 'Operator';
+
+    public $pluralDisplayName = 'Operators';
     public $displayField = 'name';
+
+
     public $virtualFields = [
-        'name' => 'CONCAT(first_name," ",last_name)',
+        'name' => 'CONCAT(""," ","")'
     ];
+
     public $fields = [
         [
             'fieldKey' => 'id',
@@ -28,7 +31,7 @@ class Operator extends ImplementableModel
             'fieldKey' => 'subcontractor_id',
             'label' => 'Subcontractor',
             'type' => InputType::SELECT,
-            'weight' => InputDiv::COL_SM_12,
+            'div' => InputDiv::COL_SM_12,
             'showIn' => TRUE,
             // 'bindValue' => 'Subcontractor.name',
             'filter' => TRUE,
@@ -37,12 +40,21 @@ class Operator extends ImplementableModel
             ]
         ],
         'account_type_id' => [
+            'label' => 'Operator Type',
+            'div' => InputDiv::COL_SM_12,
             'fieldKey' => 'account_type_id',
             'modelClass' => Account::class
         ],
         [
+            'fieldKey' => 'photo',
+            'label' => 'Photo',
+            'type' => InputType::IMAGE,
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => TRUE,
+        ],
+        [
             'fieldKey' => 'name',
-            'label' => 'Nombre',
+            'label' => 'Name',
             'div' => InputDiv::COL_SM_12,
             'showIn' => ['index'],
             'filter' => [
@@ -60,10 +72,28 @@ class Operator extends ImplementableModel
             'showIn' => ['add', 'edit', 'view', 'setup']
         ],
         [
+            'fieldKey' => 'phone',
+            'label' => 'Phone number',
+            'div' => InputDiv::COL_SM_6,
+            'showIn' => TRUE,
+            'filter' => [
+                'type' => 'LIKE'
+            ]
+        ],
+        [
             'fieldKey' => 'username',
             'modelClass' => Account::class,
+            'div' => InputDiv::COL_SM_6,
+            'showIn' => ['add', 'view', 'edit', 'setup', 'index']
+        ],
+        [
+            'fieldKey' => 'pending',
+            'label' => 'Pending Orders',
             'div' => InputDiv::COL_SM_12,
-            'showIn' => ['add', 'view', 'edit', 'setup']
+            'showIn' => ['index'],
+            'filter' => [
+                'type' => 'LIKE'
+            ]
         ],
         'password' => [
             'fieldKey' => 'password',
@@ -84,7 +114,7 @@ class Operator extends ImplementableModel
         [
             'fieldKey' => 'created',
             'modelClass' => Account::class,
-            'showIn' => ['index', 'view'],
+            'showIn' => ['view'],
         ],
         [
             'fieldKey' => 'modified',
@@ -119,7 +149,7 @@ class Operator extends ImplementableModel
             'rule' => 'notBlank',
             'required' => true,
             'message' => 'Last name field is required'
-        ],
+        ]
     ];
     public $belongsTo = [
         'Subcontractor' => [
@@ -141,10 +171,24 @@ class Operator extends ImplementableModel
         ]
     ];
 
-    public function afterSave($created, $options = array())
+    public function beforeFind($query)
     {
-        ///$this->oneTouchLink($created, $this->id);
-        parent::afterSave($created, $options);
+        $this->beforeImplement();
+        return parent::beforeFind($query);
+    }
+
+
+
+    public function afterFind($results, $primary = false)
+    {
+        foreach ($results as $key => $val) {
+            if (isset($val[$this->name]['first_name'])) {
+                $results[$key][$this->name]['pending'] = $this->Order->find('count', [
+                    'conditions' => ['Order.status' => 1, 'Order.operator_id' => $val[$this->name]['id']]
+                ]);
+            }
+        }
+        return $results;
     }
 
 
@@ -153,21 +197,49 @@ class Operator extends ImplementableModel
     public function beforeImplement()
     {
 
-        if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Systems') {
+        if (AuthComponent::user() && in_array(AuthComponent::user('AccountType.name'), ['Subcontractor', 'Supervisor']) ) {
             unset($this->fields['subcontractor_id']['options']['']);
             $this->fields['subcontractor_id']['disabled'] = 'true';
             $this->Subcontractor->conditions['Subcontractor.id'] = AuthComponent::user('Operator.subcontractor_id');
             $this->conditions['Operator.subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
             $this->conditions['Operator.id !='] = AuthComponent::user('Operator.id');
             unset($this->fields['subcontractor_id']);
-            unset($this->fields['account_type_id']);
+           // unset($this->fields['account_type_id']);
 
-            foreach ($this->data as &$dataItem) {
-                // Verifica si subcontractor_id está presente y configúralo a 1
-                if(AuthComponent::user('AccountType.name') == 'Subcontractor')
-                    $dataItem['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+            if (is_array($this->data)) {
+                foreach ($this->data as &$dataItem) {
+                    // Verifica si subcontractor_id está presente y configúralo a 1
+                    if (AuthComponent::user('AccountType.name') == 'Subcontractor')
+                        $dataItem['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+                }
             }
+
         }
+
+
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Technician') {
+            $this->conditions['Operator.subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
+
+        }
+
     }
+
+
+    public function afterSave($created, $options = [])
+    {
+        // Llama al método para actualizar el counter cache
+        $subcontractorLicense = $this->Subcontractor->SubcontractorLicense;
+        $subcontractorLicense->updateCurrentUsersCount($this->data['Operator']['subcontractor_id']);
+    }
+
+
+    public function afterDelete($options = [])
+    {
+        // Llama al método para actualizar el counter cache
+        $subcontractorLicense = $this->Subcontractor->SubcontractorLicense;
+        if (!empty($this->data['Operator']))
+            $subcontractorLicense->updateCurrentUsersCount($this->data['Operator']['subcontractor_id']);
+    }
+
 
 }

@@ -17,8 +17,9 @@ class SubcontractorLicense extends ImplementableModel
     public $virtualFields = [
         'name' => 'SELECT CONCAT(Subcontractor.name, " - ", License.name) 
                    FROM subcontractors AS Subcontractor
-                   JOIN licenses AS License ON License.id = SubcontractorLicense.license_id
-                   WHERE Subcontractor.id = SubcontractorLicense.subcontractor_id',
+                   LEFT JOIN subcontractor_licenses AS SubcontractorLicense ON Subcontractor.id = SubcontractorLicense.subcontractor_id
+                   LEFT JOIN licenses AS License ON License.id = SubcontractorLicense.license_id
+                   WHERE Subcontractor.id = SubcontractorLicense.subcontractor_id LIMIT 1',
         'remaining_days' => 'DATEDIFF(SubcontractorLicense.end_date, NOW())'
     ];
 
@@ -38,7 +39,7 @@ class SubcontractorLicense extends ImplementableModel
             'label' => 'Voucher',
             'type' => 'file',
             'class' => 'form-control',
-            'showIn' => ['add', 'edit', 'view'],
+            'showIn' => ['add', 'edit', 'view', 'licensing'],
             'data-plugins' => 'dropify',
             'data-max-file-size' => '3M',
             'searchable' => false,
@@ -139,12 +140,20 @@ class SubcontractorLicense extends ImplementableModel
                 'message' => 'This record has already been taken'
             ]
         ],
-        'voucher' => [
+        /*'voucher' => [
             'required' => [
                 'rule' => 'notBlank',
                 'required' => 'create', // Required only on add
                 'message' => 'Please complete this field',
                 'on' => 'create' // Specify 'on' condition to apply this rule only when adding
+            ]
+        ],*/
+        'license_id' => [
+            'required' => [
+                'rule' => 'notBlank',
+                'required' => 'create', // Required only on add
+                'message' => 'Please complete this field',
+                //'on' => 'create' // Specify 'on' condition to apply this rule only when adding
             ]
         ],
         'max_active_accounts' => [
@@ -251,5 +260,43 @@ class SubcontractorLicense extends ImplementableModel
         }
         return true;
     }
+
+    // En el modelo SubcontractorLicense.php
+    public function updateCurrentUsersCount($subcontractorId)
+    {
+        $this->Subcontractor->Operator->virtualFields = [
+            'name' => 'CONCAT("","")',
+        ];
+        // Contar los Accounts con status = TRUE que pertenecen a Operators del Subcontractor
+        $count = $this->Subcontractor->Operator->find('count', [
+            'joins' => [
+                [
+                    'table' => 'accounts',
+                    'type' => 'INNER',
+                    'conditions' => [
+                        'accounts.id = Operator.account_id',
+                        'accounts.account_type_id' => '2c8be97d-04cb-4a97-965a-458f8f143ec4', //IS TECHNICIAL
+                        'accounts.status' => TRUE,
+                    ]
+                ]
+            ],
+            'conditions' => [
+                'Operator.subcontractor_id' => $subcontractorId,
+            ],
+        ]);
+
+        // Actualizar el campo current_users_count en SubcontractorLicense
+        $this->updateAll(
+            ['current_users' => $count],
+            [
+                'SubcontractorLicense.subcontractor_id' => $subcontractorId,
+                'SubcontractorLicense.status' => TRUE
+            ]
+        );
+    }
+
+
+
+
 
 }

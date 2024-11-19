@@ -1,4 +1,31 @@
+document.addEventListener('DOMContentLoaded', function () {
+    $(document).on('click', '.swal-confirm', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        var message = $(this).data("message");
+        var action = $(this).attr("href");
+
+        Swal.fire({
+            title: "Atención",
+            text: message,
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonClass: "btn-danger",
+            confirmButtonText: "Si, continuar",
+            cancelButtonText: "No, regresar",
+            closeOnConfirm: false,
+            closeOnCancel: true
+        }).then(function () {
+            window.location = action;
+        });
+    });
+
+});
+
 jQuery(document).ready(function () {
+
+    return;
     $("body").fadeIn();
 
     // Select2
@@ -71,8 +98,8 @@ jQuery(document).ready(function () {
             $(this).val('CERRADO')
         }
     });
-    
-     $('.time-range-picker').on('hide.daterangepicker', function (ev, picker) {
+
+    $('.time-range-picker').on('hide.daterangepicker', function (ev, picker) {
         if (!picker.startDate.isValid() || !picker.endDate.isValid() || $(this).val() == '00:00 - 00:00') {
             $(this).val('CERRADO')
         }
@@ -145,25 +172,6 @@ jQuery(document).ready(function () {
         airMode: true
     });
 
-
-    $('.swal-confirm').click(function (e) {
-        e.preventDefault();
-        var message = $(this).data("message");
-        var action = $(this).attr("href");
-
-        swal({
-            title: "Atención",
-            text: message,
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonClass: "btn-danger",
-            confirmButtonText: "Si, continuar",
-            cancelButtonText: "No, regresar",
-            closeOnConfirm: false,
-            closeOnCancel: true}).then(function () {
-            window.location = action;
-        });
-    });
 
 
 });

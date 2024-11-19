@@ -15,7 +15,7 @@ class License extends ImplementableModel
     public $pluralDisplayName = 'Licenses';
 
     public $displayField = '_name';  // Especifica el campo virtual como displayField
- 
+
     public $virtualFields = [
         '_name' => 'CONCAT(
             License.name, 
@@ -48,6 +48,7 @@ class License extends ImplementableModel
             'fieldKey' => 'name',
             'label' => 'Name',
             'type' => 'text',
+            'exportable' => TRUE,
             'class' => 'form-control',
             'autogenerate' => true,
             'showIn' => ['index', 'add', 'edit', 'view']
@@ -55,6 +56,7 @@ class License extends ImplementableModel
         [
             'fieldKey' => 'periodicity',
             'label' => 'Perioodicity',
+            'exportable' => TRUE,
             'type' => InputType::SELECT,
             'options' => [
                 '' => 'SELECT A OPTION',
@@ -72,6 +74,7 @@ class License extends ImplementableModel
             'fieldKey' => 'price',
             'label' => 'Price',
             'type' => 'number',
+            'exportable' => TRUE,
             'class' => 'form-control',
             'showIn' => ['index', 'add', 'edit', 'view']
         ],
@@ -82,11 +85,15 @@ class License extends ImplementableModel
             'class' => 'form-control',
             'showIn' => ['index', 'add', 'edit', 'view'],
         ],
+
+
+
         [
             'fieldKey' => 'created',
             'label' => 'Created',
+            'exportable' => TRUE,
             'type' => InputType::DATE,
-            'showIn' => ['index', 'view'],
+            'showIn' => ['view'],
             'sourceFormat' => 'Y-m-d',
             'displayFormat' => 'd/m/Y',
             'filter' => [
@@ -98,8 +105,9 @@ class License extends ImplementableModel
         [
             'fieldKey' => 'modified',
             'label' => 'Modified',
+            'exportable' => TRUE,
             'type' => InputType::DATE,
-            'showIn' => ['index', 'view'],
+            'showIn' => ['view'],
             'sourceFormat' => 'Y-m-d',
             'displayFormat' => 'd/m/Y',
             'filter' => [
@@ -109,9 +117,24 @@ class License extends ImplementableModel
             ],
         ],
         [
+            'fieldKey' => 'commercial',
+            'label' => 'Commercial',
+            'type' => 'select',
+            'exportable' => TRUE,
+            'data-toggle' => 'select2',
+            'class' => 'form-control select2',
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => ['index', 'add', 'edit', 'view'],
+            'options' => [
+                true => 'YES',
+                false => 'NO'
+            ]
+        ],
+        [
             'fieldKey' => 'status',
             'label' => 'Status',
             'type' => 'select',
+            'exportable' => TRUE,
             'data-toggle' => 'select2',
             'class' => 'form-control select2',
             'div' => InputDiv::COL_SM_12,
@@ -121,7 +144,16 @@ class License extends ImplementableModel
                 true => 'Active',
                 false => 'Inactive'
             ]
-        ]
+        ],
+
+        [
+            'fieldKey' => 'shoping',
+            'label' => 'URL to external shoping cart',
+            'type' => 'text',
+            'div' => InputDiv::COL_SM_12,
+            'class' => 'form-control',
+            'showIn' => ['add', 'edit', 'view']
+        ],
     ];
 
 

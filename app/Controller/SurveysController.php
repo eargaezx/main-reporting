@@ -6,6 +6,9 @@ class SurveysController extends ImplementableController
 {
 
     public $settings = [
+        'index' => [
+            'order' => ['sequence' => 'asc'],
+        ],
         'add' => [
             'saveMethod' => 'saveAll',
             'deep' => true
@@ -16,12 +19,32 @@ class SurveysController extends ImplementableController
         ],
     ];
 
-    public function survey($name)
+    public function survey($name, $orderId = null)
     {
+        $this->loadModel('QuestionAnswer');
+
         $this->request->data = $this->Survey->find('first', [
-            'conditions' => ['Survey.name' => $name]
+            'conditions' => ['Survey.name' => $name],
+            'contain' => [
+                'Question'
+            ]
         ]);
-        
+
+        if (!empty($orderId)) {
+            $this->QuestionAnswer->recursive = -1;
+            $this->request->data['QuestionAnswer'] = $this->QuestionAnswer->find('all', [
+                'conditions' => ['QuestionAnswer.order_id' => $orderId]
+            ]);
+
+            $flatArray = array_map(function($item) {
+                return $item['QuestionAnswer'];
+            },  $this->request->data['QuestionAnswer']);
+
+            $this->request->data['QuestionAnswer']  = $flatArray;
+        }
+
+       // echo pr( $this->request->data);
+
         $this->set('data', $this->request->data);
     }
 }

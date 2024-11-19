@@ -1,4 +1,24 @@
 <?php
+ $questionAnswers = isset( $this->request->data['QuestionAnswer'] )?  $this->request->data['QuestionAnswer'] : [];
+ unset($this->request->data['QuestionAnswer']);
+ function getValueByQuestionId( $questionId, $flatArray) {
+    foreach ($flatArray as $item) {
+        if ($item['question_id'] === $questionId) {
+            return $item['value'];
+        }
+    }
+    return ''; // Retorna null si no se encuentra el question_id
+}
+
+function getIdByQuestionId( $questionId, $flatArray) {
+    foreach ($flatArray as $item) {
+        if ($item['question_id'] === $questionId) {
+            return $item['id'];
+        }
+    }
+    return ''; // Retorna null si no se encuentra el question_id
+}
+
 $_uuid = CakeText::uuid();
 $survey = $this->request->data;
 /*
@@ -21,6 +41,13 @@ $this->Form->create($modelName, [
 
 
 foreach ($survey['Question'] as $index => $question):
+    $questionAnswerId = getIdByQuestionId($question['id'], $questionAnswers);
+    if(!empty(($questionAnswerId))){
+        echo $this->Form->hidden('QuestionAnswer.' . $index . '.id', [
+            'default' => $questionAnswerId
+        ]);
+    }
+
     echo $this->Form->hidden('QuestionAnswer.' . $index . '.order_id', [
         'default' => $_uuid
     ]);
@@ -35,7 +62,8 @@ foreach ($survey['Question'] as $index => $question):
                     InputType::SELECT,
                     [
                         'label' => $question['question'],
-                        'options' => Hash::combine(explode(',', $question['options']), '{n}', '{n}')
+                        'options' => Hash::combine(explode(',', $question['options']), '{n}', '{n}'),
+                        'default' => getValueByQuestionId($question['id'], $questionAnswers )
                     ]
                 )
             );
@@ -43,13 +71,15 @@ foreach ($survey['Question'] as $index => $question):
         case 'number':
             echo $this->Form->input('QuestionAnswer.' . $index . '.value', [
                 'label' => $question['question'],
-                'type' => 'number'
+                'type' => 'number',
+                'default' => getValueByQuestionId($question['id'], $questionAnswers )
             ]);
             break;
         case 'text':
             echo $this->Form->input('QuestionAnswer.' . $index . '.value', [
                 'label' => $question['question'],
-                'type' => 'text'
+                'type' => 'text',
+                'default' => getValueByQuestionId($question['id'], $questionAnswers )
             ]);
             break;
     }

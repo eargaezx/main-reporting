@@ -11,11 +11,12 @@ class Contractor extends ImplementableModel
         'edit' => [
             'action' => 'setup',
             'title' => 'Edit',
-            'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
             'icon' => [
                 'class' => 'fe-edit-2'
             ]
         ],
+
     ];
 
     public $fields = [
@@ -38,6 +39,7 @@ class Contractor extends ImplementableModel
             'autocomplete' => 'off',
             'div' => InputDiv::COL_SM_12,
             'showIn' => TRUE,
+            'exportable' => TRUE,
             'filter' => [
                 'operator' => 'LIKE',
                 'or' => TRUE
@@ -46,6 +48,7 @@ class Contractor extends ImplementableModel
         [
             'fieldKey' => 'created',
             'type' => 'text',
+            'exportable' => TRUE,
             'label' => 'Created',
             'showIn' => ['view'],
             'filter' => [
@@ -57,12 +60,14 @@ class Contractor extends ImplementableModel
         [
             'fieldKey' => 'modified',
             'type' => 'text',
+            'exportable' => TRUE,
             'label' => 'Modified',
             'showIn' => ['view']
         ],
         [
             'fieldKey' => 'status',
             'label' => 'Status',
+            'exportable' => TRUE,
             'type' => InputType::SELECT,
             'div' => InputDiv::COL_SM_12,
             'options' => [
@@ -78,6 +83,7 @@ class Contractor extends ImplementableModel
         [
             'fieldKey' => 'comments',
             'label' => 'Comments',
+            'exportable' => TRUE,
             'div' => InputDiv::COL_SM_12,
             'rows' => 4,
             'showIn' => ['add', 'edit', 'view']
@@ -98,7 +104,7 @@ class Contractor extends ImplementableModel
             'noBlank' => [
                 'rule' => 'notBlank',
                 'message' => 'El campo estatus es requerido',
-                 'on' => 'create'
+                'on' => 'create'
             ]
         ],
     ];
@@ -107,10 +113,54 @@ class Contractor extends ImplementableModel
     public $hasOne = [
         'Partner' => [
             'className' => 'Partner',
-            'dependent' => true,
+            'dependent' => false,
             'conditions' => 'Partner.owner = 1',
         ],
     ];
+
+    public $hasMany = [
+        'Partnership' => [
+            'className' => 'Partnership',
+            'dependent' => true,
+        ],
+        'Order' => [
+            'className' => 'Order',
+            'dependent' => false,
+        ]
+    ];
+
+
+
+    public function afterDelete($options = [])
+    {
+        $Account = ClassRegistry::init('Account');
+
+        $partners = $this->Partner->find('all', [
+            'conditions' => [
+                'Partner.contractor_id' => $this->id
+            ]
+        ]);
+
+        
+        $accountIds = Hash::extract($partners, '{n}.Partner.account_id');
+
+        $Account->deleteAll([
+            'Account.id' => $accountIds
+        ], $cascade = false, $callbacks = false);
+
+
+        $this->Order->updateAll([
+            'Order.contractor_id' => NULL,
+        ], [
+            'Order.contractor_id' => $this->id,
+        ]);
+
+        $this->Partner->deleteAll([
+            'Partner.contractor_id' =>  $this->id,
+        ], $cascade = false, $callbacks = false);
+
+        parent::afterDelete($options);
+    }
 
 
 }

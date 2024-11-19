@@ -23,11 +23,10 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 <head>
 	<?php echo $this->Html->charset(); ?>
 	<title>
-		<?php echo $cakeDescription ?>:
-		<?php echo $this->fetch('title'); ?>
+	Main Report | All Jobs One Report
 	</title>
 	<?php
-	echo $this->Html->meta('icon');
+echo $this->Html->meta('icon', 'img/favicon.png', array('type' => 'png'));
 	echo $this->Html->css('../assets/libs/flatpickr/flatpickr.min');
 	echo $this->Html->css('../assets/libs/selectize/css/selectize.bootstrap3');
 	echo $this->Html->script('../assets/js/head');
@@ -39,7 +38,7 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 	echo $this->Html->css('../assets/libs/dropzone/min/dropzone.min');
 	echo $this->Html->css('../assets/libs/dropify/css/dropify.min');
 	echo $this->Html->css('../assets/libs/bootstrap-datepicker/css/bootstrap-datepicker.min');
-	echo $this->Html->css('../assets/libs/bootstrap-datepicker/css/bootstrap-datepicker.min');
+	echo $this->Html->css('../assets/libs/sweetalert2/sweetalert2.min');
 	echo $this->Html->css('../assets/libs/spectrum-colorpicker2/spectrum.min');
 	echo $this->Html->css('../assets/libs/flatpickr/flatpickr.min');
 	echo $this->Html->css('../assets/libs/clockpicker/bootstrap-clockpicker.min');
@@ -99,11 +98,15 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 	echo $this->Html->script('../assets/libs/flatpickr/flatpickr.min');
 	echo $this->Html->script('../assets/libs/spectrum-colorpicker2/spectrum.min');
 	echo $this->Html->script('../assets/libs/clockpicker/bootstrap-clockpicker.min');
+	echo $this->Html->script('../assets/libs/sweetalert2/sweetalert2.all.min');
 	echo $this->Html->script('../assets/js/pages/form-pickers.init');
 	echo $this->Html->script('../assets/js/pages/form-wizard.init');
 	echo $this->Html->script('../assets/js/implementable');
 	echo $this->Html->script('../assets/js/app');
+	echo $this->Html->script('app');
 	?>
-</body>
 
+
+
+</body>
 </html>

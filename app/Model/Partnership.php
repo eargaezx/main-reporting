@@ -3,9 +3,34 @@ App::uses('ImplementableModel', 'Implementable.Model');
 class Partnership extends ImplementableModel
 {
     public $name = 'Partnership';
-    public $singularDisplayName = 'Partnering';
-    public $pluralDisplayName = 'Partnerings';
+    public $singularDisplayName = 'B2B Partnership';
+    public $pluralDisplayName = 'B2B Partnership';
     // Array de configuración de campos
+    public $actions = [
+        'delete' => [
+            'confirm' => true,
+            'action' => 'delete',
+            'title' => 'Borrar',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
+            'data-message' => '¿Desea borrar el registro?',
+            'data' => [],
+            'icon' => [
+                'class' => 'fe-x'
+            ]
+        ]
+    ];
+
+    public $virtualFields = [
+        'pending' => '
+                    SELECT COUNT(*)
+                    FROM orders 
+                    WHERE 
+                        orders.subcontractor_id = Partnership.subcontractor_id 
+                        AND orders.status = 1
+                    ',
+    ];
+
+
     public $fields = [
         [
             'fieldKey' => 'id',
@@ -31,20 +56,54 @@ class Partnership extends ImplementableModel
             'options' => [
                 '' => 'SELECT A OPTION'
             ],
-            'showIn' => true,
-            'after' => '<div class="disclaimer">Not found you  subcontractor? <a href="setup" >Add here</a>.</div>',
+            'showIn' => true
+        ],
+        [
+            'fieldKey' => 'pending',
+            'label' => 'Pending Orders',
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => ['index'],
+            'filter' => [
+                'type' => 'LIKE'
+            ]
+        ],
+        [
+            'fieldKey' => 'drop_bury_role',
+            'label' => 'Drop Bury',
+            'type' => InputType::SELECT,
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => ['index'],
+            'filter' => TRUE,
+            'options' => [
+                '' => 'SELECT A OPTION',
+                FALSE => 'NO',
+                TRUE => 'YES'
+            ],
+        ],
+        [
+            'fieldKey' => 'directional_bore_role',
+            'label' => 'Directional Bore',
+            'type' => InputType::SELECT,
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => ['index'],
+            'filter' => TRUE,
+            'options' => [
+                '' => 'SELECT A OPTION',
+                FALSE => 'NO',
+                TRUE => 'YES'
+            ],
         ],
         [
             'fieldKey' => 'created',
             'label' => 'Created',
             'type' => 'datetime',
-            'showIn' => ['index', 'view']
+            'showIn' => ['view']
         ],
         [
             'fieldKey' => 'modified',
             'label' => 'Modified',
             'type' => 'datetime',
-            'showIn' => ['index', 'view']
+            'showIn' => ['view']
         ],
         'status' => [
             'fieldKey' => 'status',
@@ -52,8 +111,9 @@ class Partnership extends ImplementableModel
             'type' => InputType::SELECT,
             'div' => InputDiv::COL_SM_12,
             'options' => [
-                true => 'ACTIVE',
-                false => 'INACTIVE'
+                0 => 'INACTIVE',
+                1 => 'ACTIVE',
+                2 => 'PENDING'
             ],
             'showIn' => ['index', 'view']
         ],
@@ -63,7 +123,7 @@ class Partnership extends ImplementableModel
             'type' => 'textarea',
             'div' => 'form-group col-sm-12',
             'rows' => 4,
-            'showIn' => ['add', 'edit', 'view']
+            'showIn' => ['view']
         ],
 
     ];
@@ -101,7 +161,6 @@ class Partnership extends ImplementableModel
         ]
     ];
 
-
     // Método para verificar la combinación única
     public function checkUniqueCombination($check)
     {
@@ -122,10 +181,25 @@ class Partnership extends ImplementableModel
 
     public function beforeSave($options = array())
     {
+
         if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Contractor') {
             $this->data['Partnership']['contractor_id'] = AuthComponent::user('Partner.contractor_id');
-            $this->data['Partnership']['status'] = 1;
-            echo pr($this->data);
+            $this->data['Partnership']['token'] = CakeText::uuid();
+            $this->data['Partnership']['status'] = 2;
+            //echo pr($this->data);
+
+            $existing = $this->find('count', array(
+                'conditions' => array(
+                    'Partnership.contractor_id' => $this->data['Partnership']['contractor_id'],
+                    'Partnership.subcontractor_id' => $this->data['Partnership']['subcontractor_id'],
+                ),
+            ));
+
+            if ($existing > 0) {
+                //$this->invalidate('contractor_id', 'La combinación de email y nombre de usuario ya está en uso.');
+                $this->invalidate('subcontractor_id', 'The partnership already exists');
+                return false;
+            }
         }
         return parent::beforeSave($options);
     }
@@ -135,29 +209,38 @@ class Partnership extends ImplementableModel
     {
         if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Contractor') {
             $this->data['Partnership']['contractor_id'] = AuthComponent::user('Partner.id');
+            $this->conditions['Partnership.contractor_id'] = AuthComponent::user('Partner.contractor_id');
             $this->fields['contractor_id']['showIn'] = FALSE;
             $this->fields['contractor_id']['default'] = AuthComponent::user('Partner.id');
 
 
-            $this->Subcontractor->virtualFields = [
-                'name' =>
-                    'CONCAT(
-                    Subcontractor.name, 
-                    " | ", 
-                    (
-                        SELECT CONCAT(first_name, " ", last_name) FROM operators WHERE operators.subcontractor_id = Subcontractor.id AND operators.owner = 1 LIMIT 1
-                    ), 
-                    " => ",
-                    (
-                        SELECT UPPER(username) FROM operators LEFT JOIN accounts ON operators.account_id = accounts.id  WHERE operators.subcontractor_id = Subcontractor.id AND operators.owner = 1 LIMIT 1
-                    )
-                )',
-            ];
+            if ($this->controllerName == 'Partnerships' && in_array($this->actionName, ['add', 'edit'])) {
+                $this->Subcontractor->virtualFields = [
+                    'name' =>
+                        'CONCAT(
+                        Subcontractor.name, 
+                        " | ", 
+                        (
+                            SELECT CONCAT(first_name, " ", last_name) FROM operators WHERE operators.subcontractor_id = Subcontractor.id AND operators.owner = 1 LIMIT 1
+                        ), 
+                        " => ",
+                        (
+                            SELECT UPPER(username) FROM operators LEFT JOIN accounts ON operators.account_id = accounts.id  WHERE operators.subcontractor_id = Subcontractor.id AND operators.owner = 1 LIMIT 1
+                        )
+                    )',
+                ];
+            }
         }
+    }
+
+    public function afterImplement()
+    {
+        unset($this->actions['edit']);
     }
 
     public function afterSave($created, $options = array())
     {
+
         $this->oneTouchLink($created, $this->id);
         parent::afterSave($created, $options);
     }
@@ -165,26 +248,27 @@ class Partnership extends ImplementableModel
     public function oneTouchLink($created, $id)
     {
 
+        $data = $this->data;
         if (!$created || !isset($id))
             return;
 
 
-        $data = $this->read(null, $id);
-        //echo pr($data); die();
+        $this->Subcontractor->virtualFields = [];
+
         $this->Subcontractor->recursive = 2;
         $subcontractor = $this->Subcontractor->read(null, $data['Partnership']['subcontractor_id']);
         $contractor = $this->Contractor->read(null, $data['Partnership']['contractor_id']);
 
         $urlActivate = Router::url([
             'controller' => 'Partnerships',
-            'action' => 'activate',
-            $id
+            'action' => 'accept',
+            $data['Partnership']['token']
         ], true);
         //echo pr($contractor);
         $email = $subcontractor['Admin']['Account']['username'];
         $contractorName = $contractor['Contractor']['name'];
         $subcontractorName = $subcontractor['Admin']['name'];
-        
+
 
         $this->sendEmail([
             'to' => [

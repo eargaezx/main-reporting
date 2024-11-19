@@ -4,6 +4,7 @@ App::uses('ImplementableModel', 'Implementable.Model');
 
 class Account extends ImplementableModel
 {
+
     const ADMINISTRATOR = 1;
     const MANAGER = 2;
 
@@ -30,7 +31,7 @@ class Account extends ImplementableModel
         ],
         'account_type_id' => [
             'fieldKey' => 'account_type_id',
-            'label' => 'Perfil',
+            'label' => 'Account Type',
             'type' => InputType::SELECT,
             'options' => [
                 '' => 'SELECT A OPTION'
@@ -40,7 +41,7 @@ class Account extends ImplementableModel
         ],
         [
             'fieldKey' => 'username',
-            'label' => 'Correo electrónico',
+            'label' => 'Email',
             'filter' => TRUE,
             'autocomplete' => 'nope',
             'showIn' => ['add', 'view', 'edit', 'index'],
@@ -52,20 +53,20 @@ class Account extends ImplementableModel
         ],
         [
             'fieldKey' => 'repeated_password',
-            'label' => 'Repetir Clave de acceso',
+            'label' => 'Repeat Password',
             'autocomplete' => 'nope',
             'type' => 'password',
             'showIn' => ['add', 'edit'],
         ],
         [
             'fieldKey' => 'status',
-            'label' => 'Estatus',
+            'label' => 'Status',
             'type' => InputType::SELECT,
             'weight' => UIFormHelper::UI_WEIGHT_MD_12,
             'options' => [
                 '' => 'SELECT A OPTION',
-                1 => 'ACTIVO',
-                2 => 'INACTIVO',
+                TRUE => 'ACTIVO',
+                false => 'INACTIVO',
             ],
             'showIn' => TRUE,
             'filter' => TRUE
@@ -85,7 +86,7 @@ class Account extends ImplementableModel
         ],
         [
             'fieldKey' => 'modified',
-            'label' => 'Modificado',
+            'label' => 'Modified',
             'type' => 'text',
             'showIn' => ['view'],
         ],
@@ -154,31 +155,68 @@ class Account extends ImplementableModel
         'AccountType' => [
             'className' => 'AccountType',
             'foreignKey' => 'account_type_id',
-            'dependent' => false
+            'dependent' => true
         ]
     ];
 
+    // Definir el método parentNode
+    public function parentNode()
+    {
+        // Asegurarse de que haya un ID o datos presentes para la cuenta
+        if (!$this->id && empty($this->data)) {
+            return null;
+        }
 
+        // Obtener el account_type_id ya sea de los datos actuales o de la base de datos
+        if (isset($this->data['Account']['account_type_id'])) {
+            $accountTypeId = $this->data['Account']['account_type_id'];
+        } else {
+            $accountTypeId = $this->field('account_type_id');
+        }
+
+        // Si no hay account_type_id, no hay nodo padre (return null)
+        if (!$accountTypeId) {
+            return null;
+        } else {
+            // Devolver el nodo padre (AccountType) al que pertenece el Account
+            return array('AccountType' => array('id' => $accountTypeId));
+        }
+    }
 
     public function beforeImplement()
     {
         //if (AuthComponent::user())
-            //$this->conditions['Account.account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
+        //$this->conditions['Account.account_type_id'] = '2c8be97d-04cb-4a97-965a-458f8f143ec4';
 
 
         if (AuthComponent::user() && AuthComponent::user('AccountType.name') != 'Systems') {
             unset($this->fields['account_type_id']['options']['']);
             $this->fields['account_type_id']['disabled'] = 'true';
         }
+
+        if (AuthComponent::user() && in_array(AuthComponent::user('AccountType.name'), ['Subcontractor', 'Supervisor']) ) {
+            unset($this->fields['account_type_id']['disabled']);
+            $this->fields['account_type_id']['options'] = [];
+        }
+    }
+
+    public function afterImplement()
+    {
+        if (AuthComponent::user() && in_array(AuthComponent::user('AccountType.name'), ['Subcontractor', 'Supervisor']) ) {
+            unset($this->fields['account_type_id']['disabled']);
+            $this->fields['account_type_id']['options'] = array_filter($this->fields['account_type_id']['options'], function($name) {
+                return in_array($name, ['Technician', 'Supervisor']);
+            });
+        }
     }
 
     public function matchPasswords()
     {
+
         if ($this->data[$this->name]['password'] == $this->data[$this->name]['repeated_password'])
             return true;
         return false;
     }
-
 
 
     public function beforeSave($options = array())
@@ -198,6 +236,35 @@ class Account extends ImplementableModel
     {
         $this->oneTouchLink($created, $this->id);
         parent::afterSave($created, $options);
+    }
+
+
+    public function beforeValidate($options = array())
+    {
+        $this->validateLimits();
+        return parent::beforeValidate($options);
+    }
+
+    public function validateLimits()
+    {
+        if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Subcontractor') {
+            //$this->loadModel('Subcontractor');
+            $subcontractor = $this->Operator->Subcontractor->findById(AuthComponent::user('Operator.subcontractor_id'));
+            $wantsActivate = $this->data['Account']['status'] == 1;
+
+            if ($wantsActivate && empty($subcontractor['SubcontractorLicense']['status'])) {
+                $this->invalidate('status', 'You must have an active license to have active users.');
+            }
+
+            if ($wantsActivate && $subcontractor['SubcontractorLicense']['current_users'] >= $subcontractor['SubcontractorLicense']['max_users']) {
+                $this->invalidate('status', 'You must have an active license and not exceed the maximum allowed active users.');
+            }
+
+            $today = date('Y-m-d');
+            if ($wantsActivate && strtotime($subcontractor['SubcontractorLicense']['end_date']) < strtotime($today)) {
+                $this->invalidate('status', 'You must have an active license. Your license has been expired on ' . $subcontractor['SubcontractorLicense']['end_date']);
+            }
+        }
     }
 
     public function oneTouchLink($created, $id)

@@ -20,6 +20,8 @@ class AccountsController extends ImplementableController
         ],
     ];
 
+
+
     public function beforeFilter()
     {
         if (!in_array($this->request->params['action'], ['index', 'add', 'view', 'edit'])) {
@@ -38,17 +40,16 @@ class AccountsController extends ImplementableController
     public function login()
     {
 
-        $this->Account->Operator->virtualFields = [];
-        $this->Account->Partner->virtualFields = [];
+       $this->Account->Partner->virtualFields = [];
 
-        if ($this->request->is('post') || $this->request->is('get')) {
+        if ($this->request->is('post') ) {
             if ($this->Auth->login()) {
                 $data = $this->Auth->user();
 
                 $this->set('data', $data);
                 $this->redirect($this->Auth->redirectUrl());
             } else {
-                $this->Session->setFlash('Usuario y/o contraseña no validos', null, null, 'login');
+                $this->Session->setFlash('Invalid username or password.', 'Flash/modal_unsuccess', null, 'login');
             }
         }
     }
@@ -128,8 +129,10 @@ class AccountsController extends ImplementableController
         $this->Account->Operator->virtualFields = [];
         $this->Account->Partner->virtualFields = [];
 
+        $this->Auth->logout();
+
         if (empty($token)) {
-            $this->Session->setFlash('Tu cuenta no ha podido ser activada, probablemente ya ha sido activada con anterioridad o el token es inválido, intenta iniciar sesión, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'login');
+            $this->Session->setFlash('Tu cuenta no ha podido ser activada, probablemente ya ha sido activada con anterioridad o el token es inválido, intenta iniciar sesión, si el problema persiste envianos un correo a support@mainreport.us', null, null, 'login');
             return $this->redirect(Router::url(['action' => 'login'], true));
         }
 
@@ -137,44 +140,59 @@ class AccountsController extends ImplementableController
 
 
         if (!isset($Account['Account'])) {
-            $this->Session->setFlash('Tu cuenta no ha podido ser activada, probablemente ya ha sido activada con anterioridad o el token es inválido, intenta iniciar sesión, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'login');
+            $this->Session->setFlash('Your account could not be activated. It has probably already been activated or the token is invalid. Try logging in, and if the problem persists, send us an email to support@mainreport.us', 'Flash/modal_unsuccess', null, 'login');
             return $this->redirect(Router::url(['action' => 'login'], true));
         }
 
         //update
         $this->Account->id = $Account['Account']['id'];
 
-        if ( $this->Account->saveField('status', 1) && $this->Account->saveField('token', NULL) ) {
+        if ($this->Account->saveField('status', 1) && $this->Account->saveField('token', NULL)) {
 
-            $this->Session->setFlash('Tu cuenta ha sido verificada correctamente, Ahora puedes ingresar usando tu correo y contraseña', null, null, 'login');
+            $this->Session->setFlash('Your account has been successfully verified. You can now log in using your email and password.', 'Flash/modal_success', null, 'login');
 
             $this->layout = false;
         } else {
-            $this->Session->setFlash('Tu cuenta no ha podido ser activada, probablemente ya ha sido activada con anterioridad o el token es inválido, intenta iniciar sesión, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'login');
+            $this->Session->setFlash('Your account could not be activated. It has probably already been activated or the token is invalid. Try logging in, and if the problem persists, send us an email to support@mainreport.us', 'Flash/modal_unsuccess', null, 'login');
         }
         $this->redirect(Router::url(['Controller' => 'Accounts', 'action' => 'login'], true));
     }
 
     public function recover()
     {
+        $this->Account->virtualFields = [];
+        $this->Account->Operator->virtualFields = [];
+        $this->Account->Partner->virtualFields = [];
         if ($this->request->is('post')) {
             if (!isset($this->request->data['Account']['username']) || empty($this->request->data['Account']['username'])) {
-                $this->Session->setFlash('No existe ninguna cuenta, registrada con este correo.', null, null, 'recover');
+                $this->Session->setFlash('There is no account registered with this email.', 'Flash/modal_unsuccess', null, 'recover');
                 return;
             }
 
             $Account = $this->Account->findByUsername($this->request->data['Account']['username']);
 
             if (!isset($Account['Account'])) {
-                $this->Session->setFlash('No existe ninguna cuenta, registrada con este correo.', null, null, 'recover');
+                $this->Session->setFlash('There is no account registered with this email.', 'Flash/modal_unsuccess', null, 'recover');
                 return;
             }
 
+
             $recoveryCode = CakeText::uuid();
+            $this->Account->id = $Account['Account']['id'];
 
-            if ($this->Account->save(['id' => $Account['Account']['id'], 'recovery_code' => $recoveryCode,])) {
+            if ($this->Account->saveField('token', $recoveryCode)) {
+                //echo pr("successfully"); 
 
-                $this->Session->setFlash('Te hemos enviado un correo a ' . $Account['Account']['username'] . ', con las instrucciones para recuperar tu cuenta.', null, null, 'recover');
+                $this->Session->setFlash('We have sent an email to ' . $Account['Account']['username'] . ' with instructions to recover your account.', 'Flash/modal_success', null, 'recover');
+
+                $name = '';
+                if (!empty($Account['Operator']['first_name'])) {
+                    $name = $Account['Operator']['first_name'];
+                }
+
+                if (!empty($Account['Partner']['first_name'])) {
+                    $name = $Account['Partner']['first_name'];
+                }
 
                 $urlActivate = Router::url([
                     'controller' => 'Accounts',
@@ -186,12 +204,12 @@ class AccountsController extends ImplementableController
                     'to' => [
                         $Account['Account']['username']
                     ],
-                    'subject' => 'Recuperar Cuenta',
+                    'subject' => 'Restore password',
                     'content' => '',
                     'emailFormat' => 'html',
                     'template' => 'recover',
                     'viewVars' => [
-                        'name' => isset($Account['Employee']['name']) ? $Account['Employee']['name'] : '',
+                        'name' => $name,
                         'url' => $urlActivate
                     ]
                 ]);
@@ -203,15 +221,19 @@ class AccountsController extends ImplementableController
 
     public function restore($token = null)
     {
+        $this->Account->virtualFields = [];
+        $this->Account->Operator->virtualFields = [];
+        $this->Account->Partner->virtualFields = [];
+
         if (empty($token)) {
-            $this->Session->setFlash('Tu cuenta no puede ser restaurada, probablemente ya ha sido restaurada con anterioridad o el token es inválido, intenta recuperarla de nuevo, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'recover');
+            $this->Session->setFlash('Your account cannot be restored; it has likely already been restored previously or the token is invalid. Please try to recover it again. If the problem persists, send us an email at support@mainreport.us.', 'Flash/modal_unsuccess', null, 'recover');
             $this->redirect(Router::url(['action' => 'recover'], true));
         }
 
-        $Account = $this->Account->findByRecoveryCode($token);
+        $Account = $this->Account->findByToken($token);
 
         if (!isset($Account['Account'])) {
-            $this->Session->setFlash('Tu cuenta no puede ser restaurada, probablemente ya ha sido restaurada con anterioridad o el token es inválido, intenta recuperarla de nuevo, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'recover');
+            $this->Session->setFlash('Your account cannot be restored; it has likely already been restored previously or the token is invalid. Please try to recover it again. If the problem persists, send us an email at support@mainreport.us.', 'Flash/modal_unsuccess', null, 'recover');
             $this->redirect(Router::url(['action' => 'recover'], true));
         }
 
@@ -222,35 +244,51 @@ class AccountsController extends ImplementableController
         if ($this->request->is('post')) {
 
             if (!isset($this->request->data['Account']['password']) || empty($this->request->data['Account']['password']) || !isset($this->request->data['Account']['repeated_password']) || empty($this->request->data['Account']['repeated_password'])) {
-                $this->Session->setFlash('Verifica que los campos esten correctos.', null, null, 'restore');
+                $this->Session->setFlash('Verify that the fields are correct.', 'Flash/modal_unsuccess', null, 'restore');
                 return;
             }
 
             if (
                 $this->Account->save([
-                    'id' => $Account['Account']['id'],
-                    'password' => $this->request->data['Account']['password'],
-                    'repeated_password' => $this->request->data['Account']['repeated_password'],
-                    'recovery_code' => NULL
+                    'Account' => [
+                        'id' => $Account['Account']['id'],
+                        'account_type_id' => $Account['Account']['account_type_id'],
+                        'username' => $Account['Account']['username'],
+                        'password' => $this->request->data['Account']['password'],
+                        'repeated_password' => $this->request->data['Account']['repeated_password'],
+                        'status' => $Account['Account']['status'],
+                        'token' => NULL
+                    ]
                 ])
             ) {
+
+
+                $name = '';
+                if (!empty($Account['Operator']['first_name'])) {
+                    $name = $Account['Operator']['first_name'];
+                }
+
+                if (!empty($Account['Partner']['first_name'])) {
+                    $name = $Account['Partner']['first_name'];
+                }
+
 
                 $this->Account->sendEmail([
                     'to' => [
                         $Account['Account']['username']
                     ],
-                    'subject' => 'Cuenta Recuperada',
+                    'subject' => 'Password restored',
                     'emailFormat' => 'html',
                     'template' => 'restored',
                     'viewVars' => [
-                        'name' => isset($Account['Employee']['name']) ? $Account['Employee']['name'] : '',
+                        'name' => $name,
                         'url' => Router::url(['controller' => '/'], true)
                     ]
                 ]);
 
-                $this->Session->setFlash('Tu cuenta ha sido restaurada correctamente, Ahora puedes ingresar usando tu correo y tu nueva contraseña', null, null, 'login');
+                $this->Session->setFlash('Your account has been successfully restored. You can now log in using your email and your new password.', 'Flash/modal_success', null, 'login');
             } else {
-                $this->Session->setFlash('Tu cuenta no puede ser restaurada, probablemente ya ha sido restaurada con anterioridad o el token es inválido, intenta recuperarla de nuevo, si el problema persiste envianos un correo a soporte@plataformagarden.com', null, null, 'recover');
+                $this->Session->setFlash('Your account cannot be restored; it has likely already been restored previously or the token is invalid. Please try to recover it again. If the problem persists, send us an email at support@mainreport.us.', 'Flash/modal_unsuccess', null, 'recover');
                 return;
             }
             $this->redirect(Router::url(['action' => 'login'], true));

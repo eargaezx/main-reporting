@@ -56,6 +56,7 @@ class Question extends ImplementableModel
             'options' => [
                 '' => 'None',
                 'text' => 'Text',
+                'textarea' => 'Textarea',
                 'number' => 'Number',
                 'options' => 'Options',
                 'date' => 'Date',

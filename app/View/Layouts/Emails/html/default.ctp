@@ -74,8 +74,8 @@
         <?= $this->fetch('content') ?>
         <div class="footer">
             <p>&copy; 2024 Main Report. All rights reserved.</p>
-            <p>[Dirección de la Empresa]</p>
-            <p><a href="mailto:contacto@tuempresa.com">contacto@tuempresa.com</a></p>
+            <p>www.mainreport.us</p>
+            <p><a href="mailto:support@mainreport.us">support@mainreport.us</a></p>
         </div>
     </div>
 </body>

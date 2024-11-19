@@ -3,6 +3,7 @@
 App::uses('ImplementableModel', 'Implementable.Model');
 
 class AccountType extends ImplementableModel {
+    public $actsAs = array('Acl' => array('type' => 'requester'));
 
     public $fields = [
         ['fieldKey' => 'name',
@@ -21,5 +22,10 @@ class AccountType extends ImplementableModel {
             'dependent' => false
         ]
     ];
+
+
+    public function parentNode() {
+            return null;
+    }
 
 }

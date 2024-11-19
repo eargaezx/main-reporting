@@ -23,6 +23,8 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 // Setup a 'default' cache configuration for use in the application.
+
+
 Cache::config('default', array('engine' => 'File'));
 
 App::build(['Config/Common' => [APP . 'Config' . DS . 'Common' . DS]], App::REGISTER);
@@ -68,6 +70,7 @@ App::build(['Config/Common' => [APP . 'Config' . DS . 'Common' . DS]], App::REGI
  */
 CakePlugin::loadAll([
     'Implementable' => array('bootstrap' => false),
+    'Acl' =>  array('bootstrap' => true, 'routes' => true),
 ]);
 
 /**

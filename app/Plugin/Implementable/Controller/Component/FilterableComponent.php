@@ -32,6 +32,7 @@ class FilterableComponent extends Component
 
     public function implement(\Controller $controller)
     {
+        
         $this->buildData();
         $this->buildFilters($controller);
     }
@@ -81,9 +82,12 @@ class FilterableComponent extends Component
 
     protected function buildFilters(\Controller $controller)
     {
+
         if (empty($this->controller->{$this->controller->modelClass}->filters)) {
             return;
         }
+
+        //echo pr($this->getFilters()); die();
 
         $filters = $this->controller->{$this->controller->modelClass}->filters;
 
@@ -160,6 +164,8 @@ class FilterableComponent extends Component
 
       
         $controller->{$controller->modelClass}->conditions = array_replace($conditions, isset($controller->{$controller->modelClass}->conditions) ? $controller->{$controller->modelClass}->conditions : []);
+
+        //echo pr($controller->{$controller->modelClass}->conditions); die();
         
         //$this->controller->{$this->controller->modelClass}->conditions = $conditions;
         $this->controller->request->data['named']['filter'] = $values;

@@ -39,13 +39,13 @@ class EmailConfig {
 
     public $default = array(
         'transport' => 'Smtp',
-        'from' => array('system@axcode.tech' => 'Systems'),
-        'host' => 'smtp.ionos.mx',
+        'from' => array('noreply@mainreport.us' => 'Main Report'),
+        'host' => 'smtp.titan.email',
         'tls' => true,
         'port' => 587,
         'timeout' => 60,
-        'username' => 'system@axcode.tech',
-        'password' => 'sic.22309',
+        'username' => 'noreply@mainreport.us',
+        'password' => 'F1b3r.0pt24',
         //'client' => null,
         //'log' => false,
         //'charset' => 'utf-8',

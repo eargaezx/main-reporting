@@ -7,6 +7,8 @@ App::uses('Folder', 'Utility');
 abstract class ImplementableModel extends AppModel
 {
 
+    public $controllerName = null;
+    public $actionName = null;
     public $actsAs = array('Implementable.Implementable', 'Implementable.Mailing', 'Implementable.SMS');
     public $displaySingularName = '';
     public $displayPluralName = '';
@@ -16,7 +18,7 @@ abstract class ImplementableModel extends AppModel
         'view' => [
             'action' => 'view',
             'title' => 'Ver',
-            'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
             'icon' => [
                 'class' => 'fe-eye'
             ]
@@ -24,15 +26,16 @@ abstract class ImplementableModel extends AppModel
         'edit' => [
             'action' => 'edit',
             'title' => 'Edit',
-            'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
             'icon' => [
                 'class' => 'fe-edit-2'
             ]
         ],
         'delete' => [
+            'confirm' => true,
             'action' => 'delete',
             'title' => 'Borrar',
-            'class' => 'btn btn-sm btn-outline-dark waves-effect waves-light swal-confirm',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
             'data-message' => '¿Desea borrar el registro?',
             'data' => [],
             'icon' => [

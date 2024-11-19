@@ -272,6 +272,7 @@
         // Select2
         if (jQuery().select2) {
             $('[data-toggle="select2"]').select2();
+            $('[data-toggle="select2multiple"]').select2();
         }
 
         // Input Mask

@@ -19,6 +19,12 @@ if (empty($this->request->data['data']['unwrapped'])) {
 <div class="row">
     <?PHP
     foreach ($modelFields as $key => $options) {
+
+        if (!empty($options['type']) && $options['type'] == 'file' && !empty (Set::extract($key, $this->request->data)) && !is_array(Set::extract($key, $this->request->data) ) ) {
+            $options['data-default-file'] = Router::url('/', true) . Set::extract($key, $this->request->data);
+        }
+
+
         echo $this->Form->input($key, array_merge([
             'fieldset' => false,
             'format' => ['label', 'before', 'between', 'input', 'after', 'error'],

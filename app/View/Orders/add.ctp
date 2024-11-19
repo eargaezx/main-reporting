@@ -1,5 +1,8 @@
 <div class="card ">
     <div class="card-header card-header-transparent card-header-bordered font-weight-500 font-size-17">
+    <a href="javascript:window.history.back();">
+            <i class="fe-arrow-left font-size-22" style="color:black"></i>
+            </a>
         <?= 'Add ' . $singularDisplayName ?>
     </div>
     <div class="card-block p-4">
@@ -39,7 +42,7 @@
                         'action' => 'survey',
                         'EMPTY.action'
                     ],
-                    [ 'return' ]
+                    ['return']
                 );
                 ?>
             </div>
@@ -78,5 +81,35 @@
             });
 
         });
+
+
+
+        // Initialize Select2
+        $('#OrderAddress').select2({
+            placeholder: 'Search for a location',
+            ajax: {
+                url: "<?= Router::url(['controller' => 'Orders', 'action' => 'places']) ?>",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        query: params.term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: $.map(data.results, function (item) {
+                            return {
+                                id: item.place_id,
+                                text: item.formatted_address
+                            };
+                        })
+                    };
+                },
+                cache: true
+            }
+        });
+
+
     })
 </script>

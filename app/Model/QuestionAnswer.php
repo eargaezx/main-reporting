@@ -39,14 +39,6 @@ class QuestionAnswer extends ImplementableModel
             ],
             'filter' => TRUE
         ],
-
-        'value' => [
-            'fieldKey' => 'related_question_value',
-            'label' => 'Related Question Value',
-            'rows' => 1,
-            'div' => InputDiv::COL_SM_12,
-            'showIn' => TRUE,
-        ],
     ];
     public $validate = [
         'order_id' => [
@@ -72,5 +64,40 @@ class QuestionAnswer extends ImplementableModel
             'dependent' => true
         ]
     ];
+
+
+    public function afterValidate()
+    {
+        parent::afterValidate();
+        $this->prepareFileAnswers($this->data);
+    }
+
+
+    protected function prepareFileAnswers($data)
+    {
+        $this->Question->recursive = -1;
+        $question = $this->Question->findById($data['QuestionAnswer']['question_id']);
+
+        if (
+            $question['Question']['type'] == 'file'
+            && empty($data['QuestionAnswer']['value'])
+            && is_array($data['QuestionAnswer']['value']
+                && !empty($data['QuestionAnswer']['value']['name']))
+        ) {
+            $fileprefix = uniqid();
+            $simpledir = Router::url(['controller' => '/'], true) . '/files/' . $fileprefix . '/';
+            $folder_dir = WWW_ROOT . '/files/' . $fileprefix . '/';
+
+            $ext = explode('.', $data['QuestionAnswer']['value']['name']);
+            $new_name = uniqid() . '.' . end($ext);
+
+            new Folder($folder_dir, true);
+
+            $filename = $folder_dir . $fileprefix . $new_name;
+            move_uploaded_file($data['QuestionAnswer']['value']['tmp_name'], $filename);
+
+            $data['QuestionAnswer']['value'] = $simpledir . $fileprefix . $new_name;
+        }
+    }
 
 }

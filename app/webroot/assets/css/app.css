@@ -3579,6 +3579,7 @@ div.dataTables_scrollBody > table > :not(:first-child) {
 
 .select2-container {
   width: 100% !important;
+  margin-right: 28px!important;
 }
 .select2-container .select2-selection--single {
   border: 1px solid var(--ct-border-color);
@@ -6175,4 +6176,9 @@ input[no-editable]{
   pointer-events: none; /* Disable pointer events */
   cursor: not-allowed; /* Change cursor style */
   background-color: #fffaf3;
+}
+
+.form-check-input:checked {
+  background-color: #f6bb72;
+  border-color: #f6bb72;
 }

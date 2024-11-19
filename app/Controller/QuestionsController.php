@@ -43,7 +43,7 @@ class QuestionsController extends ImplementableController
                 : null);
 
         if ($surveyId) {
-            $this->Question->fields['survey_id']['showIn'] = FALSE; 
+            //$this->Question->fields['survey_id']['showIn'] = FALSE; 
             $this->Question->fields['survey_id']['default'] = $surveyId;
 
             $redirect = [

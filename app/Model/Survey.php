@@ -19,6 +19,23 @@ class Survey extends ImplementableModel
             'fieldKey' => 'name',
             'label' => 'Name',
             'showIn' => TRUE,
+            'div' => InputDiv::COL_SM_6,
+            'filter' => [
+                'type' => 'LIKE'
+            ]
+        ], 
+        [
+            'fieldKey' => 'sequence',
+            'label' => 'Sequence',
+            'div' => InputDiv::COL_SM_6,
+            'type' => 'number',
+            'showIn' => TRUE,
+            'filter' => FALSE
+        ], 
+        [
+            'fieldKey' => 'icon',
+            'label' => 'Icon  (icon name of materialdesing icons)',
+            'showIn' => ['add', 'edit', 'view'],
             'filter' => [
                 'type' => 'LIKE'
             ]
@@ -90,6 +107,7 @@ class Survey extends ImplementableModel
             'className' => 'Question',
             'foreignKey' => 'survey_id',
             'dependent' => false,
+            'order' => ['Question.sequence' => 'ASC']
         ]
     ];
 

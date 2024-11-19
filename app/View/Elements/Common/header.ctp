@@ -1,3 +1,4 @@
+
 <!-- ========== Topbar Start ========== -->
 <div class="navbar-custom">
     <div class="topbar ">
@@ -6,15 +7,16 @@
             <!-- Topbar Brand Logo -->
             <div class="logo-box">
                 <!-- Brand Logo Light -->
-                <a href="index.html" class="logo-light">
+                <a href="index.html" class="logo-light" style="color:white;">
                     <img src="<?= Router::url('/', true); ?>/img/ic_launcher.png" alt="logo" class="logo-lg">
                     <img src="<?= Router::url('/', true); ?>/img/ic_launcher.png" alt="small logo" class="logo-sm">
+                    DEV 1.0
                 </a>
             </div>
 
             <div class=" d-none d-xl-block">
-                <a class="nav-link  waves-effect waves-light"
-                    href="<?php echo $this->Html->url(array('controller' => 'Pages', 'action' => 'display')); ?>"
+                <a class="nav-link nav-header  <?= in_array($this->name, ['Pages']) ? 'active' : '' ?>   waves-effect waves-light"
+                    href="<?php echo Router::url(array('controller' => 'Pages', 'action' => 'display', 'admin' => false, 'plugin' => false), true); ?>"
                     role="button" aria-haspopup="false">
                     <i class="mdi mdi-monitor-dashboard"></i>&nbsp;
                     Dashboard
@@ -26,8 +28,8 @@
 
                 <!-- Dropdown Menu -->
                 <div class=" d-none d-xl-block">
-                    <a class="nav-link  waves-effect waves-light"
-                        href="<?php echo $this->Html->url(array('controller' => 'Licenses', 'action' => 'index')); ?>"
+                    <a class="nav-link nav-header  <?= in_array($this->name, ['Licenses']) ? 'active' : '' ?>  waves-effect waves-light"
+                        href="<?php echo Router::url(array('controller' => 'Licenses', 'action' => 'index', 'admin' => false, 'plugin' => false), true); ?>"
                         role="button" aria-haspopup="false">
                         <i class="mdi mdi-key-chain"></i>
                         Licenses
@@ -36,8 +38,8 @@
 
 
                 <div class=" d-none d-xl-block">
-                    <a class="nav-link  waves-effect waves-light"
-                        href="<?php echo $this->Html->url(array('controller' => 'Contractors', 'action' => 'index')); ?>"
+                    <a class="nav-link nav-header  <?= in_array($this->name, ['Contractors']) ? 'active' : '' ?>  waves-effect waves-light"
+                        href="<?php echo Router::url(array('controller' => 'Contractors', 'action' => 'index', 'admin' => false, 'plugin' => false), false); ?>"
                         role="button" aria-haspopup="false">
                         <i class="mdi mdi-home"></i>
                         Contractors
@@ -45,8 +47,8 @@
                 </div>
 
                 <div class=" d-none d-xl-block">
-                    <a class="nav-link  waves-effect waves-light"
-                        href="<?php echo $this->Html->url(array('controller' => 'Subcontractors', 'action' => 'index')); ?>"
+                    <a class="nav-link nav-header  <?= in_array($this->name, ['Subcontractors']) ? 'active' : '' ?>  waves-effect waves-light"
+                        href="<?php echo Router::url(array('controller' => 'Subcontractors', 'action' => 'index', 'admin' => false, 'plugin' => false), false); ?>"
                         role="button" aria-haspopup="false">
                         <i class="mdi mdi-office-building"></i>
                         Subcontractors
@@ -57,7 +59,7 @@
 
             <?php if (in_array(AuthComponent::user('AccountType.name'), ['Contractor'])): ?>
                 <div class=" d-none d-xl-block">
-                    <a class="nav-link  waves-effect waves-light"
+                    <a class="nav-link nav-header  <?= in_array($this->name, ['Partnerships']) ? 'active' : '' ?>  waves-effect waves-light"
                         href="<?php echo $this->Html->url(array('controller' => 'Partnerships', 'action' => 'index')); ?>"
                         role="button" aria-haspopup="false">
                         <i class="mdi mdi-handshake"></i>
@@ -69,18 +71,18 @@
             <?php if (in_array(AuthComponent::user('AccountType.name'), ['Systems', 'Subcontractor'])): ?>
                 <!-- Dropdown Menu -->
                 <div class=" d-none d-xl-block">
-                    <a class="nav-link  waves-effect waves-light"
+                    <a class="nav-link nav-header  <?= in_array($this->name, ['Operators']) ? 'active' : '' ?>  waves-effect waves-light"
                         href="<?php echo $this->Html->url(array('controller' => 'Operators', 'action' => 'index')); ?>"
                         role="button" aria-haspopup="false">
                         <i class="mdi mdi-account-multiple-outline"></i>&nbsp;
-                        Technicians
+                        Operators
                     </a>
                 </div>
             <?php endif; ?>
 
             <!-- Dropdown Menu -->
             <div class=" d-none d-xl-block">
-                <a class="nav-link  waves-effect waves-light"
+                <a class="nav-link nav-header <?= in_array($this->name, ['Orders']) && in_array($this->action, ['index']) ? 'active' : '' ?>  waves-effect waves-light"
                     href="<?php echo $this->Html->url(array('controller' => 'Orders', 'action' => 'index')); ?>">
                     <i class="mdi  mdi-clipboard-text"></i>&nbsp;
                     Orders
@@ -89,7 +91,7 @@
 
             <!-- Dropdown Menu -->
             <div class=" d-none d-xl-block">
-                <a class="nav-link  waves-effect waves-light"
+                <a class="nav-link nav-header <?= in_array($this->name, ['Orders']) && in_array($this->action, ['maps']) ? 'active' : '' ?>   waves-effect waves-light"
                     href="<?php echo $this->Html->url(array('controller' => 'Orders', 'action' => 'maps')); ?>">
                     <i class="mdi mdi-map"></i>&nbsp;
                     Map
@@ -112,28 +114,35 @@
                     <img src="<?= Router::url('/', true); ?>/assets/images/users/user-5.jpg" alt="user-image"
                         class="rounded-circle">
                     <span class="ms-1 d-none d-md-inline-block">
-                        <strong>
-                            <?= AuthComponent::user('AccountType.name') ?>
-                        </strong> &nbsp
-                        <br />
+            
                         <?php
                         $name = 'SysAdmin';
                         switch (AuthComponent::user('AccountType.name')) {
                             case 'Contractor':
-                                $name = AuthComponent::user('Partner.first_name') . ' '.AuthComponent::user('Partner.last_name'); ;
+                                $name = AuthComponent::user('Partner.first_name') . ' ' . AuthComponent::user('Partner.last_name');
+                                ;
                                 break;
                             case 'Subcontractor':
-                                $name = AuthComponent::user('Operator.first_name') . ' '.AuthComponent::user('Operator.last_name'); 
+                                $name = AuthComponent::user('Operator.first_name') . ' ' . AuthComponent::user('Operator.last_name');
                                 break;
                             case 'Technician':
-                                $name = AuthComponent::user('Operator.name');
+                                $name = AuthComponent::user('Operator.first_name') . ' ' . AuthComponent::user('Operator.last_name');
+                                break;
+                            case 'Supervisor':
+                                $name = AuthComponent::user('Operator.first_name') . ' ' . AuthComponent::user('Operator.last_name');
                                 break;
                         }
+
                         echo $name;
                         ?>
                         &nbsp
                         <br />
+                      
                         <?= AuthComponent::user('username') ?> &nbsp
+                        <br />
+                        <strong>
+                            <?= AuthComponent::user('AccountType.name') ?>
+                        </strong> &nbsp
                     </span>
 
 

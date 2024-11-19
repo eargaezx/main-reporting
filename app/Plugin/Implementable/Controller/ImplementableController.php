@@ -4,6 +4,7 @@ App::uses('AppController', 'Controller');
 
 abstract class ImplementableController extends AppController
 {
+    public $permissions = [ '' ];
 
     public $helpers = [
         'Implementable.Implementable'
@@ -11,14 +12,24 @@ abstract class ImplementableController extends AppController
     public $controllerActions = [];
     public $settings = [];
 
+
     public function beforeFilter()
     {
+
+        $controllerName = $this->request->params['controller'];
+        $actionName = $this->request->params['action'];
+        if($this->{$this->modelClass}){
+            $this->{$this->modelClass}->controllerName = $controllerName;
+            $this->{$this->modelClass}->actionName = $actionName;
+        }
+
+        
 
         $this->controllerActions = array_replace_recursive([
             [
                 'type' => 'search',
                 'title' => 'Buscar',
-                'class' => 'btn btn-sm btn-dark waves-effect',
+                'class' => 'btn btn-sm btn-warning waves-effect',
                 'icon' => [
                     'class' => 'fe-search font-size-18'
                 ],
@@ -29,16 +40,17 @@ abstract class ImplementableController extends AppController
                 [
                     'action' => 'add',
                     'title' => 'Crear',
-                    'class' => 'btn btn-sm btn-dark waves-effect',
+                    'class' => 'btn btn-sm btn-warning waves-effect',
                     'icon' => [
                         'class' => 'fe-plus font-size-18'
                     ],
                     'data' => []
                 ],
             [
-                'action' => 'download',
+                //'type' => 'post',
+                'action' => 'export',
                 'title' => 'Descargar',
-                'class' => 'btn btn-sm btn-dark waves-effect',
+                'class' => 'btn btn-sm btn-warning waves-effect',
                 'icon' => [
                     'class' => 'fe-download font-size-18'
                 ],
@@ -88,6 +100,11 @@ abstract class ImplementableController extends AppController
         parent::beforeFilter();
     }
 
+    public function list(){
+        $list = $this->{$this->modelClass}->find('list');
+        $this->set('data', $list);
+    }
+
     public function index()
     {
         $this->paginate = [
@@ -114,7 +131,7 @@ abstract class ImplementableController extends AppController
                     $this->redirect(Router::url($this->settings[$this->params['action']]['redirect'], true));
                 }
             } else {
-                echo pr($this->{$this->modelClass}->validationErrors);
+                //echo pr($this->{$this->modelClass}->validationErrors);
                 $errors = 'La operación se realizó correctamente.';
                 if ($this->request->ext == 'json') {
                     $errors = $this->{$this->modelClass}->validationErrors;
@@ -291,7 +308,7 @@ abstract class ImplementableController extends AppController
     {
 
         if ($this->request->is('post')) {
-            $fields = $this->{$this->modelClass}->fields;
+            $fields = $this->fields('import');
             $importables = array_keys(array_filter($fields, function ($value) {
                 return isset($value['importable']) && $value['importable'] === true;
             }));
@@ -350,4 +367,66 @@ abstract class ImplementableController extends AppController
         $this->render('../Elements/Components/import');
     }
 
+
+    public function export()
+    {
+        $modelClass = $this->modelClass;
+        $fields = $this->{$this->modelClass}->fields;
+
+        //echo pr( $this->request->data ); die();
+
+        $fields = array_filter($fields, function ($value) {
+            return isset($value['exportable']) && $value['exportable'] === true;
+        });
+
+        $headers = array_map(function ($value) {
+            return $value['fieldKey'];
+        }, $fields);
+
+        // Obtener los datos del modelo
+        $data = $this->$modelClass->find('all');
+
+
+        // Preparar el nombre del archivo CSV
+        $filename = strtolower($modelClass) . '_index_' . date('YmdHis') . '.csv';
+
+        // Generar el archivo CSV
+        $csvFile = fopen('php://output', 'w');
+        ob_start();
+
+        // Insertar encabezados en el CSV
+        fputcsv($csvFile, $headers);
+
+        //echo pr($fields); die();
+
+        // Insertar datos en el CSV
+        foreach ($data as $record) {
+            $row = [];
+            foreach ($fields as $field) {
+
+                if (isset($field['options'])) {
+                    $row[] = (!empty($field['options'][Set::extract($field['bindValue'], $record)]) ? $field['options'][Set::extract($field['bindValue'], $record)] : 'None');
+                } else {
+                    $value = Set::extract($field['bindValue'], $record);
+                    if (empty($value)) {
+                        $row[] = 'Empty';
+                    } else {
+                        $row[] = $record[$modelClass][$field['fieldKey']];
+                    }
+                }
+
+            }
+            fputcsv($csvFile, $row);
+        }
+
+        fclose($csvFile);
+        $csvContent = ob_get_clean();
+
+        // Configurar las cabeceras HTTP para forzar la descarga del archivo
+        $this->response->type('csv');
+        $this->response->download($filename);
+        $this->response->body($csvContent);
+
+        return $this->response;
+    }
 }

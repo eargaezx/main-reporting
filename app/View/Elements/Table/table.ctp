@@ -14,13 +14,13 @@ if ($this->request->ext != 'ajax'):
                 data-table-action="<?= Router::url(['controller' => $controllerName, 'action' => $actionName, ''], true) ?>"
                 data-paginate-limit="<?= isset($limit) ? $limit : 10 ?>" data-last-page="1" data-updating="false">
                 <thead>
-                    <tr class="bg-blue-grey-50">
+                    <tr class="bg-blue-grey-50" style="background-color: #f6bb72!important; color:#ffffff;">
                         <?PHP foreach ($modelFields as $key => $settings): ?>
                             <th class="text-uppercase">
                                 <?= $settings['label'] ?>
                             </th>
                         <?PHP endforeach ?>
-                        <th class="text-uppercase fixed-column" style="background-color: #eceef0!important;">
+                        <th class="text-uppercase fixed-column" style="background-color: #f6bb72!important; color:#ffffff;">
                             Acciones
                         </th>
                     </tr>
@@ -90,17 +90,31 @@ if ($this->request->ext != 'ajax'):
                                         );
                                         ?>
                                     <?PHP else: ?>
-                                        <a href="<?=
-                                            Router::url(['action' => $controllerAction['action']] + (isset($controllerAction['controller']) ? ['controller' => $controllerAction['controller']] : []) + (isset($controllerAction['params']) ? $controllerAction['params'] : []))
-                                            ?>" data-toggle="tooltip" data-placement="bottom"
-                                            data-original-title="<?= isset($controllerAction['title']) ? $controllerAction['title'] : '' ?>"
-                                            type="<?= isset($controllerAction['type']) ? $controllerAction['type'] : 'button' ?>"
-                                            class="<?= isset($controllerAction['class']) ? $controllerAction['class'] : '' ?>">
-                                            <i
-                                                class="<?= isset($controllerAction['icon']['class']) ? $controllerAction['icon']['class'] : '' ?>">
-                                                <?= isset($controllerAction['icon']['text']) ? $controllerAction['icon']['text'] : '' ?>
-                                            </i>
-                                        </a>
+                                        <?PHP if (isset($controllerAction['type']) && $controllerAction['type'] == 'confirm'): ?>
+                                            <a href="#" action="<?=
+                                                Router::url(['action' => $controllerAction['action']] + (isset($controllerAction['controller']) ? ['controller' => $controllerAction['controller']] : []) + (isset($controllerAction['params']) ? $controllerAction['params'] : []))
+                                                ?>" data-toggle="tooltip" data-placement="bottom"
+                                                data-original-title="<?= isset($controllerAction['title']) ? $controllerAction['title'] : '' ?>"
+                                                type="<?= isset($controllerAction['type']) ? $controllerAction['type'] : 'button' ?>"
+                                                class="<?= isset($controllerAction['class']) ? $controllerAction['class'] : '' ?>">
+                                                <i
+                                                    class="<?= isset($controllerAction['icon']['class']) ? $controllerAction['icon']['class'] : '' ?>">
+                                                    <?= isset($controllerAction['icon']['text']) ? $controllerAction['icon']['text'] : '' ?>
+                                                </i>
+                                            </a>
+                                        <?PHP else: ?>
+                                            <a href="<?=
+                                                Router::url(['action' => $controllerAction['action']] + (isset($controllerAction['controller']) ? ['controller' => $controllerAction['controller']] : []) + (isset($controllerAction['params']) ? $controllerAction['params'] : []))
+                                                ?>" data-toggle="tooltip" data-placement="bottom"
+                                                data-original-title="<?= isset($controllerAction['title']) ? $controllerAction['title'] : '' ?>"
+                                                type="<?= isset($controllerAction['type']) ? $controllerAction['type'] : 'button' ?>"
+                                                class="<?= isset($controllerAction['class']) ? $controllerAction['class'] : '' ?>">
+                                                <i
+                                                    class="<?= isset($controllerAction['icon']['class']) ? $controllerAction['icon']['class'] : '' ?>">
+                                                    <?= isset($controllerAction['icon']['text']) ? $controllerAction['icon']['text'] : '' ?>
+                                                </i>
+                                            </a>
+                                        <?PHP endif; ?>
                                     <?PHP endif; ?>
 
                                 <?PHP endforeach ?>
@@ -121,7 +135,8 @@ if ($this->request->ext != 'ajax'):
                                 } else if (isset($settings['options'])) {
                                     echo !empty($settings['options'][Set::extract($settings['bindValue'], $rowData)]) ? $settings['options'][Set::extract($settings['bindValue'], $rowData)] : 'None';
                                 } else if (isset($settings['thumbnail']) && !empty($settings['thumbnail'])) {
-                                    echo $this->Html->image(Set::extract($settings['bindValue'], $rowData), isset($settings['thumbnail']) ? $settings['thumbnail'] : ['width' => '60px', 'height' => '60px', 'style' => 'border-radius:50%;']);
+                                    if (!empty(Set::extract($settings['bindValue'], $rowData)))
+                                        echo $this->Html->image(Set::extract($settings['bindValue'], $rowData), isset($settings['thumbnail']) ? $settings['thumbnail'] : ['width' => '60px', 'height' => '60px', 'style' => 'border-radius:50%;']);
                                 } else {
                                     $value = Set::extract($settings['bindValue'], $rowData);
                                     if (empty($value)) {
@@ -139,7 +154,7 @@ if ($this->request->ext != 'ajax'):
                                 echo $this->Form->postLink(
                                     '<i class="' . (isset($modelAction['icon']['class']) ? $modelAction['icon']['class'] : '') . '">' . (isset($modelAction['icon']['text']) ? $modelAction['icon']['text'] : '') . '</i>',
                                     [
-                                        'controller' => (isset($modelAction['controller']) ? ['controller' => $modelAction['controller']] : $controllerName),
+                                        'controller' => (isset($modelAction['controller']) ? $modelAction['controller'] : $controllerName),
                                         'action' => $modelAction['action'],
                                         $rowData[$modelName]['id']
                                     ],
@@ -147,7 +162,7 @@ if ($this->request->ext != 'ajax'):
                                         'method' => 'GET',
                                         'data' => !empty($modelAction['data']) ? $modelAction['data'] : [],
                                         'escape' => false, // Permitir HTML dentro del enlace
-                                        'confirm' => false,
+                                        'confirm' => isset($modelAction['confirm']) ? $modelAction['data-message'] : false,
                                         'class' => isset($modelAction['class']) ? $modelAction['class'] : '' // Agregar clase CSS
                                     ]
                                 );
@@ -164,11 +179,19 @@ if ($this->request->ext != 'ajax'):
 <?PHP endif; ?>
 
 <?PHP if ($this->request->ext != 'ajax'): ?>
-    <div class="col-md-2 offset-md-10 d-flex align-items-rigth gap-1 mt-4">
-        <div class="paginator" id="<?= $table_component_id ?>-paginator">
+    <div class="col-md-12 text-center mt-2">
+        <?php
+        echo $this->Paginator->counter(array(
+            'format' => __('Showing {:current} records out of {:count} total')
+        )); ?>
+    </div>
+    <div class="col-md-12 text-center align-items-center  gap-1 mt-2">
+        <div class="paginator" id="<?= $table_component_id ?>-paginator"  style="width: fit-content!important; display:  inline-block;">
         <?PHP endif; ?>
-        <ul class="pagination">
+
+        <ul class="pagination" style="width: fit-content!important;">
             <?php
+
             //echo $this->Paginator->prev(__('« Previous'), array('class' => 'page-link'));
             echo $this->Paginator->numbers(
                 array(
@@ -283,12 +306,20 @@ if ($this->request->ext != 'ajax'):
                         input.setAttribute('value', event.target.text);
                         form.append(input);
 
+                        var serializedData = form.serializeArray().filter(function (item) {
+                            return item.value.trim() !== '';
+                        }).map(function (item) {
+                            return encodeURIComponent(item.name) + '=' + encodeURIComponent(item.value);
+                        }).join('&');
+
+                        console.log(form.serialize());
+
                         //form.submit();
 
                         $.ajax({
                             url: action,
                             type: 'POST',
-                            data: form.serialize(),
+                            data: serializedData,
                             success: function (response) {
                                 // Crea un contenedor temporal para manipular la respuesta
                                 var tempContainer = $('<div></div>').html('<table>' + response + '</table>');
@@ -300,32 +331,29 @@ if ($this->request->ext != 'ajax'):
 
                                 $("#<?= $table_component_id ?>-paginator").find('.pagination').first().html(pagination);
 
-                                $(table).find('tbody').html(response).find('.swal-confirm').click(function (e) {
-                                    e.preventDefault();
-                                    var message = $(this).data("message");
-                                    var action = $(this).attr("href");
+                                $(table).find('tbody').html(response);
 
-                                    swal({
-                                        title: "Atención",
-                                        text: message,
-                                        type: "warning",
-                                        showCancelButton: true,
-                                        confirmButtonClass: "btn-danger",
-                                        confirmButtonText: "Si, continuar",
-                                        cancelButtonText: "No, regresar",
-                                        closeOnConfirm: false,
-                                        closeOnCancel: true
-                                    }).then(function () {
-                                        window.location = action;
-                                    });
-                                });
+                                /*.find('.swal-confirm').click(function (e) {
+                                     e.preventDefault();
+                                     var message = $(this).data("message");
+                                     var action = $(this).attr("href");
+
+                                     swal({
+                                         title: "Atención",
+                                         text: message,
+                                         type: "warning",
+                                         showCancelButton: true,
+                                         confirmButtonClass: "btn-danger",
+                                         confirmButtonText: "Si, continuar",
+                                         cancelButtonText: "No, regresar",
+                                         closeOnConfirm: false,
+                                         closeOnCancel: true
+                                     }).then(function () {
+                                         window.location = action;
+                                     });
+                                 });*/
 
                                 runs();
-
-                                $(table).trigger("update");
-                                //var count = $(self.table).find("tbody").find("tr").length;
-                                //$(self).find('.counter').first().text(count);
-                                $(table).data('updating', false);
                             }
                         });
 

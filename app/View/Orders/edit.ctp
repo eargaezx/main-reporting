@@ -1,6 +1,9 @@
 <div class="card ">
     <div class="card-header card-header-transparent card-header-bordered font-weight-500 font-size-17">
-        <?= 'Edit ' . $singularDisplayName ?>
+    <a href="javascript:window.history.back();">
+            <i class="fe-arrow-left font-size-22" style="color:black"></i>
+            </a>
+        <?= 'Edit ' . $singularDisplayName . ' #' . $this->request->data['Order']['name'] ?>
     </div>
     <div class="card-block p-4">
 
@@ -65,7 +68,7 @@
                     let urlAction = "<?= Router::url([
                         'controller' => 'Surveys',
                         'action' => 'survey',
-                    ]) ?>/" + selectedName + ".action";
+                    ]) ?>/" + selectedName +  "/<?=  $this->request->data['Order']['id'] ?> .action";
 
                     $.ajax({
                         url: urlAction,

@@ -12,9 +12,7 @@
             </div>
             <div class="col-md-8 col-lg-6 col-xl-5">
                 <div class="card bg-pattern">
-
                     <div class="card-body p-4">
-
                         <div class="text-center w-75 m-auto">
                             <div class="auth-logo">
                                 <a href="#" class="logo logo-dark text-center">
@@ -47,8 +45,8 @@
                             ?>
                         <div class="">
                             <div class="panel-heading">
-                                <h5>
-                                    <strong class="">Ingresar</strong>
+                                <h5> 
+                                    <strong class="">Login</strong>
                                 </h5>
                                 <!--<span class="text-size-18">
                                     Content Manager System
@@ -95,13 +93,14 @@
                             </div>
                         </div>
 
-                        <!--<div class="row">
-                            <div class="col-sm-12 text-center">
-                                <p>Don't have an account? <a href="page-register.html" class="text-primary m-l-5"><b>Sign Up</b></a>
+                        <div class="row">
+                            <div class="col-sm-12 text-center mt-3">
+                                <p>Forgot your password?
+                                     <a href="<?= Router::url(['controller' => 'Accounts', 'action' => 'recover'], true) ?>" class="text-primary m-l-5"><b>recover</b></a>
                                 </p>
                     
                             </div>
-                        </div>-->
+                        </div>
                         <?= $this->Form->end() ?>
 
 

@@ -4,6 +4,16 @@ App::uses('ImplementableController', 'Implementable.Controller');
 
 class PartnershipsController extends ImplementableController
 {
+
+    public $controllerActions = [
+        [],
+        'add' =>
+        [
+            'icon' => [
+                'class' => 'fe-send font-size-18'
+            ],
+        ]
+    ];
     
 
     public $settings = [
@@ -16,12 +26,17 @@ class PartnershipsController extends ImplementableController
             'controller' => 'Subcontractors',
             'saveMethod' => 'saveAll',
             'deep' => true
-        ]
+        ],
+
     ];
 
-    public function beforeFilter(){
+
+    public function beforeFilter()
+    {
+        $this->Auth->allow(['accept']);
         parent::beforeFilter();
     }
+
 
     public function setup($id = null)
     {
@@ -88,5 +103,36 @@ class PartnershipsController extends ImplementableController
         $this->request->data = $dirtyData;
     }
 
+
+    public function accept($token = null)
+    {
+        $this->Auth->logout();
+
+        if (empty($token)) {
+            $this->Session->setFlash('The invite was not accept successfully, maybe the token had expired, please request to the contractor a new invite, if the problem persist, please contact to support@mainreport.us', null, null, 'login');
+            return $this->redirect(Router::url(['controller' => 'Accounts', 'action' => 'login'], true));
+        }
+
+        $partnership = $this->Partnership->findByToken($token);
+
+
+        if (!isset($partnership['Partnership'])) {
+            $this->Session->setFlash('The invite was not accept successfully, maybe the token had expired, please request to the contractor a new invite, if the problem persist, please contact to support@mainreport.us', null, null, 'login');
+            return $this->redirect(Router::url(['controller' => 'Accounts','action' => 'login'], true));
+        }
+
+        //update
+        $this->Partnership->id = $partnership['Partnership']['id'];
+
+        if ( $this->Partnership->saveField('status', 1) && $this->Partnership->saveField('token', NULL) ) {
+
+            $this->Session->setFlash('The invite was accept successfully, now you can collaborate with you Contractor', null, null, 'login');
+
+            $this->redirect(Router::url(['controller' => 'Accounts', 'action' => 'login'], true));
+        } else {
+            $this->Session->setFlash('The invite was not accept successfully, maybe the token had expired, please request to the contractor a new invite, if the problem persist, please contact to support@mainreport.us', null, null, 'login');
+        }
+        $this->redirect(Router::url(['controller' => 'Accounts', 'action' => 'login'], true));
+    }
 
 }
