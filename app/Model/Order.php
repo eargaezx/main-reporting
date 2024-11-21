@@ -9,7 +9,7 @@ class Order extends ImplementableModel
     public $pluralDisplayName = 'Orders';
 
     
-    public $actions = [
+    /*public $actions = [
         'edit' => [
             'action' => 'edit',
             'title' => 'Edit',
@@ -27,7 +27,7 @@ class Order extends ImplementableModel
                 'class' => 'fe-repeat'
             ]
         ],
-    ];
+    ];*/
 
     public $fields = [
         [
@@ -131,7 +131,7 @@ class Order extends ImplementableModel
             'class' => 'form-control',
             'label' => 'Action',
             'div' => InputDiv::COL_SM_4,
-            'showIn' => ['add', 'edit', 'view'],
+            'showIn' => ['index', 'add', 'edit', 'view'],
             'importable' => true,
             'exportable' => true,
             'filter' => [
@@ -167,7 +167,7 @@ class Order extends ImplementableModel
             'fieldKey' => 'created',
             'label' => 'Created',
             'type' => InputType::DATE,
-            'showIn' => ['index', 'view', 'maps'],
+            'showIn' => ['view', 'maps'],
             'sourceFormat' => 'Y-m-d',
             'displayFormat' => 'd/m/Y',
             'exportable' => true,

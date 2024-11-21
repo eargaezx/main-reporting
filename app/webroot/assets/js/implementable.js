@@ -18,6 +18,33 @@
                     }
                 });
 
+
+
+                // Validación personalizada: data-validate-equals
+                inputs.filter('[data-validate-equals]').each(function () {
+                    var targetId = $(this).data('validate-equals'); // ID del input objetivo
+                    var targetElement = $(`#${targetId}`);
+                    
+                    if (targetElement.length && $(this).val() !== targetElement.val()) {
+                        isValid = false;
+
+                        // Marcar ambos inputs como inválidos
+                        this.setCustomValidity('The values are not equals');
+                        targetElement[0].setCustomValidity('The values are not equals');
+                        
+                        this.reportValidity();
+                        targetElement[0].reportValidity();
+                    } else {
+                        // Restablecer validez en caso de que se corrija
+                        this.setCustomValidity('');
+                        if (targetElement.length) {
+                            targetElement[0].setCustomValidity('');
+                        }
+                    }
+                });
+
+
+
                 if (!isValid) {
                     return false;
                 }{//valid form

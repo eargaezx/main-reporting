@@ -45,6 +45,11 @@
 
                 ?>
 
+
+                <?PHP
+                echo $this->Form->submit('Search', ['class' => 'btn btn-warning col-sm-12 mb-4']);
+                ?>
+
                 <?PHP foreach ($modelFields as $key => $settings): ?>
                     <th>
                         <?PHP
@@ -59,7 +64,6 @@
                 <?PHP endforeach ?>
 
                 <?PHP
-                echo $this->Form->submit('Search', ['class' => 'btn btn-warning']);
                 echo $this->Form->end();
                 ?>
             </div>

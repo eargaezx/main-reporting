@@ -6182,3 +6182,15 @@ input[no-editable]{
   background-color: #f6bb72;
   border-color: #f6bb72;
 }
+
+.accordion-button:focus {
+  background-color: #f6bb72!important;
+  border-color: #f6bb72!important;
+  color: #fff!important;
+}
+
+.accordion-button:not(.collapsed){
+  background-color: #f6bb72!important;
+  border-color: #f6bb72!important;
+  color: #fff!important;
+}

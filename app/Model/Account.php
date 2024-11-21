@@ -55,6 +55,7 @@ class Account extends ImplementableModel
             'fieldKey' => 'repeated_password',
             'label' => 'Repeat Password',
             'autocomplete' => 'nope',
+            'data-validate-equals' => 'AccountPassword',
             'type' => 'password',
             'showIn' => ['add', 'edit'],
         ],
