@@ -421,3 +421,24 @@ td {
 .error-message{
     color:red;
 }
+
+#menuVertical > .card-body{
+    background-color: #f6bb72!important;
+    height: 100%;
+}
+
+
+#menuVertical > .card-body > .list-group > .list-group-item{
+    color: #f6f6f6!important;
+    background-color: #f6bb72!important;
+}
+
+#menuVertical > .card-body > .list-group > .list-group-item > a{
+    color: #f6f6f6!important;
+    display: block!important;
+    text-align: center!important;
+}
+
+#menuVertical > .card-body > .list-group > .list-group-item > a > i{
+    color: #f6f6f6!important;
+}

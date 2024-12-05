@@ -793,7 +793,7 @@ class ThemeCustomizer {
     }
 
     showBackdrop() {
-        const backdrop = document.createElement('div');
+        /*const backdrop = document.createElement('div');
         backdrop.id = 'custom-backdrop';
         backdrop.classList = 'offcanvas-backdrop fade show';
         document.body.appendChild(backdrop);
@@ -808,7 +808,7 @@ class ThemeCustomizer {
         backdrop.addEventListener('click', function (e) {
             self.html.classList.remove('sidebar-enable');
             self.hideBackdrop();
-        })
+        })?*/
     }
 
     hideBackdrop() {

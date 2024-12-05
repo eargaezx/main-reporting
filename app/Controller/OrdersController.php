@@ -77,8 +77,41 @@ class OrdersController extends ImplementableController
         parent::index();
     }
 
+    protected function licensing()
+    {
+        if (in_array(AuthComponent::user('AccountType.name'), ['Subcontractor', 'Supervisor'])) {
+            $this->loadModel('SubcontractorLicense');
+            $licensing = $this->SubcontractorLicense->find(
+                'first',
+                [
+                    'conditions' => [
+                        'SubcontractorLicense.subcontractor_id' => AuthComponent::user('Operator.subcontractor_id'),
+                        'SubcontractorLicense.status' => true,
+                    ]
+                ]
+            );
+            // Supongamos que la fecha está almacenada en la variable $endDate
+            $endDate = $licensing['SubcontractorLicense']['end_date']; // "12-12-2024"
+            // Convertir la fecha a formato DateTime
+            $endDateTime = DateTime::createFromFormat('Y-m-d', $endDate);
+            $currentDateTime = new DateTime(); // Fecha y hora actual
+            $expired = $endDateTime < $currentDateTime;
+
+            if ($expired) {
+                $this->redirect(array('controller' => 'Licenses', 'action' => 'buy'));
+            }
+        }
+    }
+
+    public function add()
+    {
+        $this->licensing();
+        parent::add();
+    }
+
     public function edit($id = null)
     {
+        $this->licensing();
         if ($this->request->ext == 'json')
             return parent::edit($id);
 
@@ -133,7 +166,7 @@ class OrdersController extends ImplementableController
 
     public function import()
     {
-
+        $this->licensing();
         if ($this->request->is('post')) {
             $fields = $this->{$this->modelClass}->fields;
             $importables = array_map(function ($value) {
@@ -270,7 +303,7 @@ class OrdersController extends ImplementableController
         if ($this->request->is('post')) {
 
             $csvData = $this->request->data['Orders'];
-            
+
             $csvData = array_filter($csvData, function ($value) {
                 return isset($value['import']);
             });
@@ -278,7 +311,7 @@ class OrdersController extends ImplementableController
 
             if ($this->{$this->modelClass}->saveAll($csvData)) {
                 $this->Session->write('csvDataCount', count($csvData));
-                $this->sendEmail(count($csvData));
+                $this->sendEmail($csvData);
                 // $this->Session->setFlash(__('The records has been imported'), 'default', ['class' => 'alert alert-success bg-success']);
                 $this->redirect(array('action' => 'done'));
             } else {
@@ -300,8 +333,8 @@ class OrdersController extends ImplementableController
             $validAdsresses = $this->validteAddresses($addresses);
 
             foreach ($csvData as $index => $value) {
-                $csvData[ $index ]['isValidAddress'] =  in_array( $this->sanitizeAddress($value['address']),$validAdsresses)  ;
-                $csvData[ $index ]['isUnassigned'] =  empty($value['contractor_id']) || empty($value['operator_id']) ;
+                $csvData[$index]['isValidAddress'] = in_array($this->sanitizeAddress($value['address']), $validAdsresses);
+                $csvData[$index]['isUnassigned'] = empty($value['contractor_id']) || empty($value['operator_id']);
             }
 
             //echo pr($csvData ); die();
@@ -351,48 +384,81 @@ class OrdersController extends ImplementableController
     }
 
 
-    protected function sendEmail($count)
+    protected function sendEmail($data)
     {
-        $to = [];
-        $name = '';
+
+        $this->loadModel('Account');
+
+        $operators = $this->Account->find('list', array(
+            'fields' => ['Operator.id', 'Account.username'],//bind by operator id
+            'joins' => [
+                [
+                    'table' => 'operators',
+                    'alias' => 'Operator',
+                    'type' => 'INNER',  // Solo usuarios con operador
+                    'conditions' => [
+                        'Account.id = Operator.account_id',
+                        'Operator.owner !=' => 1 //technicians and supervisors
+                    ]
+                ]
+            ]
+        ));
+
+        $subcontractors = $this->Account->find('list', array(
+            'fields' => ['Operator.subcontractor_id', 'Account.username'], //bind by subcontractor id
+            'joins' => [
+                [
+                    'table' => 'operators',
+                    'alias' => 'Operator',
+                    'type' => 'INNER',  // Solo usuarios con operador
+                    'conditions' => [
+                        'Account.id = Operator.account_id',
+                        'Operator.owner' => 1 //sucontractistas
+                    ]
+                ]
+            ]
+        ));
+
+        $contractors = $this->Account->find('list', array(
+            'fields' => ['Partner.contractor_id', 'Account.username'], //bind by contractor id
+            'joins' => [
+                [
+                    'table' => 'partners',
+                    'alias' => 'Partner',
+                    'type' => 'INNER',  // Solo usuarios con operador
+                    'conditions' => [
+                        'Account.id = Partner.account_id'
+                    ]
+                ]
+            ]
+        ));
+
+
+       $mails = [];
+
+        foreach($data as $row){
+            if(!empty($row['contractor_id'])){
+                $mails[] = $contractors[  $row['contractor_id'] ];
+            }
+            if(!empty($row['subcontractor_id'])){
+                $mails[] = $subcontractors[ $row['subcontractor_id'] ];
+            }
+            if(!empty($row['operator_id'])){
+                $mails[] = $operators[ $row['operator_id'] ];
+            }
+        }
+
+        $mails = array_unique($mails);
+
+
+
+
+
+        $to = $mails;
         $allocatorType = '';
         $allocator = 'Main Report';
 
-        $this->loadModel('Account');
-        if (!empty($this->request->data['Order']['Order']['subcontractor_id'])) {
-            $subcontractor = $this->Order->Subcontractor->findById($this->request->data['Order']['Order']['subcontractor_id']);
-            $name = $subcontractor['Admin']['name'];
-
-            $this->Account->virtualFields = [];
-            $this->Account->Operator->virtualFields = [];
-            $account = $this->Account->findById($subcontractor['Admin']['account_id']);
-
-
-            $to = array_merge($to, [$account['Account']['username']]);
-        }
-
-        if (!empty($this->request->data['Order']['Order']['contractor_id'])) {
-            $contractor = $this->Order->Contractor->findById($this->request->data['Order']['Order']['contractor_id']);
-            $name = $contractor['Partner']['name'];
-
-            $this->Account->virtualFields = [];
-            $this->Account->Operator->virtualFields = [];
-            $account = $this->Account->findById($contractor['Partner']['account_id']);
-
-            $to = array_merge($to, [$account['Account']['username']]);
-        }
-
-        if (!empty($this->request->data['Order']['Order']['operator_id'])) {
-            $operator = $this->Order->Operator->findById($this->request->data['Order']['Order']['operator_id']);
-            $name = $operator['Operator']['first_name'];
-
-            $this->Account->virtualFields = [];
-            $this->Account->Operator->virtualFields = [];
-            $account = $this->Account->findById($operator['Operator']['account_id']);
-
-            $to = array_merge($to, [$account['Account']['username']]);
-        }
-
+ 
         if (AuthComponent::user() && AuthComponent::user('AccountType.name') == 'Contractor') {
             $contractor = $this->Order->Contractor->findById(AuthComponent::user('Partner.contractor_id'));
             $allocator = $contractor['Contractor']['name'];
@@ -407,9 +473,6 @@ class OrdersController extends ImplementableController
 
         $allocatorType = AuthComponent::user('AccountType.name');
 
-        if (count($to) > 1) {
-            $name = '';
-        }
 
         if (empty($to))
             return;
@@ -420,8 +483,6 @@ class OrdersController extends ImplementableController
             'emailFormat' => 'html',
             'template' => 'imported',
             'viewVars' => [
-                'count' => $count,
-                'name' => $name,
                 'allocator' => $allocator,
                 'allocatorType' => $allocatorType,
                 'url' => Router::url(['controller' => '/'], true)
@@ -460,16 +521,16 @@ class OrdersController extends ImplementableController
         $result = json_decode($response->body, true);
         //echo pr($result); die();
 
-         // Verificar si hay resultados en la respuesta
-         if (!empty($result['results'])) {
+        // Verificar si hay resultados en la respuesta
+        if (!empty($result['results'])) {
             foreach ($result['results'] as $index => $res) {
                 // Extraer la respuesta asociada a la dirección
                 $response = $res['response'];
-                
+
                 // Verificar si la dirección tiene al menos un resultado y un tipo de precisión correcto
                 if (!empty($response['results'])) {
                     foreach ($response['results'] as $resultData) {
-                        $accuracyType = isset($resultData['accuracy_type'])? $resultData['accuracy_type'] :  '';
+                        $accuracyType = isset($resultData['accuracy_type']) ? $resultData['accuracy_type'] : '';
 
                         // Solo consideramos las direcciones con "accuracy_type" de "rooftop"
                         if ($accuracyType === 'rooftop') {
@@ -506,7 +567,8 @@ class OrdersController extends ImplementableController
     }
 
 
-    public function reassign($id){
+    public function reassign($id)
+    {
 
     }
 }

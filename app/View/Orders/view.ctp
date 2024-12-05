@@ -11,7 +11,7 @@
     <!-- Primer Acordeón -->
     <div class="accordion-item">
         <h2 class="accordion-header" id="headingForm">
-            
+
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                 data-bs-target="#collapseForm" aria-expanded="true" aria-controls="collapseForm">
                 <strong>Order Details</strong>
@@ -36,31 +36,33 @@
         <div id="collapseQuestions" class="accordion-collapse collapse" aria-labelledby="headingQuestions"
             data-bs-parent="#detailsAccordion">
             <div class="accordion-body">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Question</th>
-                            <th>Answer</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($questions as $question): ?>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
                             <tr>
-                                <td class="font-weight-bold"><?= $question['question'] ?></td>
-                                <td>
-                                    <?php
-                                    $questionId = $question['id'];
-                                    $answers = array_filter($this->request->data['QuestionAnswer'], function ($item) use ($questionId) {
-                                        return $item['question_id'] == $questionId;
-                                    });
-
-                                    echo empty(reset($answers)['value']) ? '' : reset($answers)['value'];
-                                    ?>
-                                </td>
+                                <th>Question</th>
+                                <th>Answer</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($questions as $question): ?>
+                                <tr>
+                                    <td class="font-weight-bold"><?= $question['question'] ?></td>
+                                    <td>
+                                        <?php
+                                        $questionId = $question['id'];
+                                        $answers = array_filter($this->request->data['QuestionAnswer'], function ($item) use ($questionId) {
+                                            return $item['question_id'] == $questionId;
+                                        });
+
+                                        echo empty(reset($answers)['value']) ? '' : reset($answers)['value'];
+                                        ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

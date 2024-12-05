@@ -1,17 +1,26 @@
-
 <!-- ========== Topbar Start ========== -->
 <div class="navbar-custom">
     <div class="topbar ">
         <div class="topbar-menu d-flex align-items-center gap-1">
 
             <!-- Topbar Brand Logo -->
-            <div class="logo-box">
+            <div class="logo-box  d-none d-xl-block">
                 <!-- Brand Logo Light -->
                 <a href="index.html" class="logo-light" style="color:white;">
-                    <img src="<?= Router::url('/', true); ?>/img/ic_launcher.png" alt="logo" class="logo-lg">
+                    <img src="<?= Router::url('/', true); ?>/img/ic_launcher.png" alt="logo" class="logo-lg" style="height: 56px; margin-top:8px">
                     <img src="<?= Router::url('/', true); ?>/img/ic_launcher.png" alt="small logo" class="logo-sm">
                     DEV 1.0
                 </a>
+            </div>
+
+            <!-- Topbar Brand Logo -->
+            <div class="logo-box d-md-none">
+              
+                <button class="button-toggle-menu" data-bs-toggle="collapse" data-bs-target="#menuVertical"
+                    aria-expanded="false" aria-controls="menuVertical">
+                    <i class="mdi mdi-menu"></i>
+                </button>
+                DEV 1.0
             </div>
 
             <div class=" d-none d-xl-block">
@@ -114,7 +123,7 @@
                     <img src="<?= Router::url('/', true); ?>/assets/images/users/user-5.jpg" alt="user-image"
                         class="rounded-circle">
                     <span class="ms-1 d-none d-md-inline-block">
-            
+
                         <?php
                         $name = 'SysAdmin';
                         switch (AuthComponent::user('AccountType.name')) {
@@ -137,7 +146,7 @@
                         ?>
                         &nbsp
                         <br />
-                      
+
                         <?= AuthComponent::user('username') ?> &nbsp
                         <br />
                         <strong>

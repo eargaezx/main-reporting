@@ -8,7 +8,7 @@ class Order extends ImplementableModel
     public $singularDisplayName = 'Order';
     public $pluralDisplayName = 'Orders';
 
-    
+
     /*public $actions = [
         'edit' => [
             'action' => 'edit',
@@ -320,6 +320,7 @@ class Order extends ImplementableModel
             $this->data[$this->name]['status'] = 1;
         } else if (!empty($this->data[$this->name]['id']) && $this->exists($this->data[$this->name]['id']) && !empty($this->data[$this->name]['survey_id'])) {
             $this->data[$this->name]['status'] = 2;
+            $this->data[$this->name]['deployEndEmail'] = 1;
         }
 
 
@@ -333,6 +334,11 @@ class Order extends ImplementableModel
     public function afterSave($created, $options = array())
     {
         ///$this->oneTouchLink($created, $this->id);
+
+        if (!empty($this->data[$this->name]['deployEndEmail']) && $this->data[$this->name]['deployEndEmail'] == 1) {
+            $this->sendEmailCompleted($this->id);
+        }
+
         parent::afterSave($created, $options);
     }
 
@@ -376,5 +382,106 @@ class Order extends ImplementableModel
             $this->conditions['Order.operator_id'] = AuthComponent::user('Operator.id');
             $this->data['Order']['subcontractor_id'] = AuthComponent::user('Operator.subcontractor_id');
         }
+    }
+
+
+    public function sendEmailCompleted($id)
+    {
+        $Account = ClassRegistry::init('Account');
+        $Account->recursive = -1;
+        $Account->virtualFields = [];
+        $Account->Operator->virtualFields = [];
+        $Account->Partner->virtualFields = [];
+
+        if (!isset($id))
+            return;
+
+        $order = $this->read(null, $id);
+
+        $url = Router::url([
+            'controller' => 'Accounts',
+            'action' => 'login'
+        ], true);
+
+        $to = [];
+
+        $operator = $Account->find('first', array(
+            'fields' => ['Account.username'],//bind by operator id
+            'joins' => [
+                [
+                    'table' => 'operators',
+                    'alias' => 'Operator',
+                    'type' => 'INNER',  // Solo usuarios con operador
+                    'conditions' => [
+                        'Account.id = Operator.account_id',
+                        'Operator.owner !=' => 1, //technicians and supervisors
+                        'Operator.id' =>  $order['Order']['operator_id']
+                    ]
+                ]
+            ],
+        ));
+
+  
+        $subcontractor = $Account->find('first', array(
+            'fields' => ['Account.username'], //bind by subcontractor id
+            'joins' => [
+                [
+                    'table' => 'operators',
+                    'alias' => 'Operator',
+                    'type' => 'INNER',  // Solo usuarios con operador
+                    'conditions' => [
+                        'Account.id = Operator.account_id',
+                        'Operator.owner' => 1, //sucontractistas
+                        'Operator.subcontractor_id' =>  $order['Order']['subcontractor_id']
+                    ]
+                ]
+            ]
+        ));
+
+        $contractor =  $Account->find('first', array(
+            'fields' => ['Account.username'], //bind by contractor id
+            'joins' => [
+                [
+                    'table' => 'partners',
+                    'alias' => 'Partner',
+                    'type' => 'INNER',  // Solo usuarios con operador
+                    'conditions' => [
+                        'Account.id = Partner.account_id',
+                        'Partner.contractor_id' =>  $order['Order']['contractor_id']
+                    ]
+                ]
+            ]
+        ));
+
+        $survey = $this->Survey->findById($order['Order']['survey_id']);
+
+
+
+
+        if (!empty($operator['Account']['username'])) {
+            $to[] = $operator['Account']['username'];
+        }
+
+        if (!empty($subcontractor['Account']['username'])) {
+            $to[] = $subcontractor['Account']['username'];
+        }
+
+        if (!empty($contractor['Account']['username'])) {
+            $to[] = $contractor['Account']['username'];
+        }
+
+
+        $this->sendEmail([
+            'to' => $to,
+            'subject' => 'Finished Order',
+            'content' => '',
+            'emailFormat' => 'html',
+            'template' => 'completed',
+            'viewVars' => [
+                'order' => $order['Order']['name'],
+                'survey' => $survey['Survey']['name'],
+                'url' => $url
+            ]
+        ]);
     }
 }
