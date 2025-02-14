@@ -7,6 +7,7 @@ class QuestionsController extends ImplementableController
 
     public $settings = [
         'index' => [
+            'limit' => 100,
             'order' => [
                 'Question.sequence' => 'desc',
             ]

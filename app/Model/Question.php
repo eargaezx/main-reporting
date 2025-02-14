@@ -104,6 +104,13 @@ class Question extends ImplementableModel
             ]
         ],
 
+        [
+            'fieldKey' => 'sequence',
+            'label' => 'Sequence',
+            'div' => InputDiv::COL_SM_12,
+            'showIn' => TRUE
+        ],
+
 
         [
             'fieldKey' => 'created',

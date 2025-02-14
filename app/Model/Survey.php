@@ -5,6 +5,36 @@ App::uses('ImplementableModel', 'Implementable.Model');
 class Survey extends ImplementableModel
 {
 
+    public $actions = [
+        'view' => [
+            'action' => 'view',
+            'title' => 'Ver',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
+            'icon' => [
+                'class' => 'fe-settings'
+            ]
+        ],
+        'edit' => [
+            'action' => 'edit',
+            'title' => 'Edit',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
+            'icon' => [
+                'class' => 'fe-edit-2'
+            ]
+        ],
+        'delete' => [
+            'confirm' => true,
+            'action' => 'delete',
+            'title' => 'Borrar',
+            'class' => 'btn btn-sm btn-warning waves-effect waves-light',
+            'data-message' => '¿Desea borrar el registro?',
+            'data' => [],
+            'icon' => [
+                'class' => 'fe-trash-2'
+            ]
+        ]
+    ];
+
     public $singularDisplayName = 'Survey';
     public $pluralDisplayName = 'Surveys';
     public $fields = [

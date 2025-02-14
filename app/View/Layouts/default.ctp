@@ -52,7 +52,6 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 	<!-- Begin page -->
 	<div id="wrapper">
 		<!-- ========= Menu ========== -->
-		<?= $this->element('Commons/menu') ?>
 		<!-- ========== Left menu End ========== -->
 
 
