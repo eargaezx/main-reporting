@@ -213,7 +213,7 @@ class Account extends ImplementableModel
 
     public function matchPasswords()
     {
-
+        
         if ($this->data[$this->name]['password'] == $this->data[$this->name]['repeated_password'])
             return true;
         return false;
@@ -221,16 +221,21 @@ class Account extends ImplementableModel
 
 
     public function beforeSave($options = array())
-    {
+    {       
+
         if (isset($this->data[$this->name]['password'])) {
             $this->data[$this->name]['password'] = AuthComponent::password($this->data[$this->name]['password']);
         }
+    
+  
+
+        //echo pr($this->data[$this->name]); die(); 
 
         if ($this->isNewRecord()) {
             $this->data[$this->name]['token'] = CakeText::uuid();
         }
 
-        return parent::beforeSave($options);
+        return parent::beforeSave($options); 
     }
 
     public function afterSave($created, $options = array())

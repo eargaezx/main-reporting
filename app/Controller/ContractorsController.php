@@ -26,10 +26,17 @@ class ContractorsController extends ImplementableController
         $this->set('id', $id);
         $this->set('actionType', empty($id) ? 'add' : 'edit');
 
-
+ 
         $dirtyData = $this->request->data;
         //echo pr($dirtyData); die();
         if ($this->request->is(['POST', 'PUT'])) {
+
+            if (empty($this->request->data['Account']['password'])){
+                unset($this->request->data['Account']['password']);
+                unset($this->request->data['Account']['repeated_password']);
+                
+            }  
+
             $cleanData = [
                 'Contractor' => [
                     'logo' => $this->request->data['Contractor']['logo'],
